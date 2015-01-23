@@ -17,7 +17,7 @@ dgrid is available under the same dual BSD/AFLv2 license as the Dojo Toolkit.
 
 ###Pre-compile dgrid 
 
-You may want to pre-compile dgrid/put-selector/dstore: 
+You may want to pre-compile dgrid/put-selector/dstore into one file (for debug version of your app): 
 
 1. Checkout xjs and compile:
 
