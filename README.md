@@ -30,7 +30,7 @@ You may want to pre-compile dgrid/put-selector/dstore into one file (for debug v
  
 3. in your app, then:
  
- require(['dgrid/dgrid'], function (_dijit, _dojox,_dgrid) {
+ require(['dgrid/dgrid'], function (_dgrid) {
     require('app/main or whatever is needed to pull your app bootstrap)
  }
 
