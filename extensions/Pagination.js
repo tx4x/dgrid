@@ -10,10 +10,10 @@ define([
 	'dojo/when',
 	'put-selector/put',
 	'../util/misc',
-	'dojo/i18n!./nls/pagination',
-	'dojo/_base/sniff',
-	'xstyle/css!../css/extensions/Pagination.css'
-], function (_StoreMixin, declare, arrayUtil, lang, on, query, string, has, when, put, miscUtil, i18n) {
+	/*'dojo/i18n!./nls/pagination',*/
+	'dojo/_base/sniff'
+	/*'xstyle/css!../css/extensions/Pagination.css'*/
+], function (_StoreMixin, declare, arrayUtil, lang, on, query, string, has, when, put, miscUtil) {
 	function cleanupContent(grid) {
 		// Remove any currently-rendered rows, or noDataMessage
 		if (grid.noDataNode) {
@@ -77,7 +77,10 @@ define([
 		// i18nPagination: Object
 		//		This object contains all of the internationalized strings as
 		//		key/value pairs.
-		i18nPagination: i18n,
+		i18nPagination: {
+            rowsPerPage:'',
+            status:''
+        },
 
 		showFooter: true,
 		_currentPage: 1,

@@ -8,8 +8,8 @@ define([
 	'dojo/has',
 	'../util/misc',
 	'put-selector/put',
-	'dojo/_base/html',
-	'xstyle/css!../css/extensions/ColumnResizer.css'
+	'dojo/_base/html'
+	/*'xstyle/css!../css/extensions/ColumnResizer.css'*/
 ], function (declare, listen, query, lang, dom, geom, has, miscUtil, put) {
 
 	function addRowSpan(table, span, startRow, column, id) {

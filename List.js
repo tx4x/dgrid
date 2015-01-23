@@ -3,13 +3,12 @@ define([
 	'dojo/on',
 	'dojo/has',
 	'./util/misc',
-	'xstyle/has-class',
 	'put-selector/put',
-	'dojo/_base/sniff',
-	'xstyle/css!./css/dgrid.css'
-], function (declare, listen, has, miscUtil, hasClass, put) {
+	'dojo/_base/sniff'
+
+], function (declare, listen, has, miscUtil,put) {
 	// Add user agent/feature CSS classes
-	hasClass('mozilla', 'touch');
+	//hasClass('mozilla', 'touch');
 
 	// Add a feature test for pointer (only Dojo 1.10 has pointer-events and MSPointer tests)
 	has.add('pointer', function (global) {

@@ -3,10 +3,9 @@ define([
 	'dojo/has',
 	'dojo/on',
 	'../util/misc',
-	'put-selector/put',
-	'dojo/i18n!./nls/columnHider',
-	'xstyle/css!../css/extensions/ColumnHider.css'
-], function (declare, has, listen, miscUtil, put, i18n) {
+	'put-selector/put'
+	/*'xstyle/css!../css/extensions/ColumnHider.css' // no need */
+], function (declare, has, listen, miscUtil, put) {
 /*
  *	Column Hider plugin for dgrid
  *	Originally contributed by TRT 2011-09-28
@@ -47,7 +46,10 @@ define([
 		// i18nColumnHider: Object
 		//		This object contains all of the internationalized strings for
 		//		the ColumnHider extension as key/value pairs.
-		i18nColumnHider: i18n,
+		i18nColumnHider: {
+            popupLabel:'',
+            popupTriggerLabel:''
+        },
 
 		// _hiderMenuOpened: Boolean
 		//		Records the current open/closed state of the menu.

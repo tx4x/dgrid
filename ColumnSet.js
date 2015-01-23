@@ -7,8 +7,8 @@ define([
 	'dojo/has',
 	'./util/misc',
 	'put-selector/put',
-	'dojo/_base/sniff',
-	'xstyle/css!./css/columnset.css'
+	'dojo/_base/sniff'
+	/*'xstyle/css!./css/columnset.css'*/
 ], function (declare, lang, on, aspect, query, has, miscUtil, put) {
 	has.add('event-mousewheel', function (global, document, element) {
 		return 'onmousewheel' in element;
