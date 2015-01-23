@@ -3,6 +3,42 @@ grids of data, on-demand lazy-loaded data, and various mixins for additional fun
 
 dgrid is available under the same dual BSD/AFLv2 license as the Dojo Toolkit.
 
+
+### Attention this is a fork:
+
+- has no xstyle dependencies at all
+- soon jsdoc converted comments
+- a build profile to pre-compile it as layer, useful to get rid of requests in release-debug versions of your app 
+- a pre-built-version
+- is maintained and updated (every week once) til dgrid has the same
+- load your dgrid.css from somewhere else as you do with all your app's css
+- contains a slight modified but up-to-date dgrid.css which gets rid of all those annoying borders
+
+
+###Pre-compile dgrid 
+
+You may want to pre-compile dgrid/put-selector/dstore: 
+
+1. Checkout xjs and compile:
+
+        $ git git clone --recursive https://github.com/mc007/xjs
+        $ cd xjs/src
+        $ sh buildLayer.sh dgrid  
+
+2. This will create a folder in xjs/src/lib/dgrid-release, copy that to your project folders source directory for dojo 
+ packages
+ 
+3. in your app, then:
+ 
+ require(['dgrid/dgrid'], function (_dijit, _dojox,_dgrid) {
+    require('app/main or whatever is needed to pull your app bootstrap)
+ }
+
+Notes: you can also use the https://github.com/mc007/dojo-boilerplate, but its using the original dgrid
+
+
+------------------- Fork notes end -------------------------------------------------------------------------------------
+
 # Installation
 
 ## Installing with bower
