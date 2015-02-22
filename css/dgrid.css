@@ -241,3 +241,6 @@ html.has-mozilla .dgrid-focus {
 .dgrid-autoheight .dgrid-header {
     right: 0;
 }
+.dgrid-cell{
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -o-text-overflow: ellipsis; -moz-binding: url('./truncate.xml#ellipsis');
+}
