@@ -529,6 +529,10 @@ define([
 				return target; // No-op; already a row
 			}
 
+            if(!target){
+                debugger;
+            }
+
 			if (target.target && target.target.nodeType) {
 				// Event
 				target = target.target;
