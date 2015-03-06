@@ -58,7 +58,7 @@
   text-align: left;
   overflow: hidden;
   vertical-align: top;
-  /*border: 1px solid #ddd;*/
+  border-right: 1px solid #ddd;
   border-top-style: none;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -70,12 +70,12 @@
 }
 .dgrid-scroller {
   overflow-x: auto;
-  overflow-y: scroll;
+  /*overflow-y: scroll;*/
   position: absolute;
   top: 0px;
   margin-top: 25px;
   bottom: 0px;
-  width: 100%;
+  width: 0px;
 }
 .dgrid-preload {
   font-size: 0;

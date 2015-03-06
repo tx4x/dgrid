@@ -174,6 +174,8 @@ define([
 				// always-on: create editor immediately upon rendering each cell
 				if (!column.canEdit || column.canEdit(object, value)) {
 					var cmp = self._createEditor(column);
+                    //dgrid-hack
+                    cmp.object=object;
 					self._showEditor(cmp, column, cell, value);
 					// Maintain reference for later use.
 					cell[isWidget ? 'widget' : 'input'] = cmp;
