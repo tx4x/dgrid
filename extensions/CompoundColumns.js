@@ -4,6 +4,7 @@ define([
 	'dojo/sniff',
 	'dojo/query',
 	'../util/misc'
+	/*'xstyle/css!../css/extensions/CompoundColumns.css'*/
 ], function (lang, declare, has, query, miscUtil) {
 	return declare(null, {
 		// summary:

@@ -2,10 +2,9 @@ define([
 	'dojo/_base/declare',
 	'dojo/_base/lang',
 	'dojo/_base/sniff',
-	'dojo/dom-construct',
-	'dojo/dom-class',
-	'./Selection'
-], function (declare, lang, has, domConstruct, domClass, Selection) {
+	'./Selection',
+	'put-selector/put'
+], function (declare, lang, has, Selection, put) {
 
 	return declare(Selection, {
 		// summary:
@@ -34,16 +33,19 @@ define([
 		},
 
 		_defaultRenderSelectorInput: function (column, selected, cell, object) {
+			var parent = cell.parentNode;
 			var grid = column.grid;
 
-			domClass.add(cell, 'dgrid-selector');
-			return cell.input || (cell.input = domConstruct.create('input', {
-				'aria-checked': selected,
-				checked: selected,
-				disabled: !grid.allowSelect(grid.row(object)),
+			// Must set the class name on the outer cell in IE for keystrokes to be intercepted
+			put(parent && parent.contents ? parent : cell, '.dgrid-selector');
+			var input = cell.input || (cell.input = put(cell, 'input[type=' + column.selector + ']', {
 				tabIndex: isNaN(column.tabIndex) ? -1 : column.tabIndex,
-				type: column.selector
-			}, cell));
+				disabled: !grid.allowSelect(grid.row(object)),
+				checked: selected
+			}));
+			input.setAttribute('aria-checked', selected);
+
+			return input;
 		},
 
 		_configureSelectorColumn: function (column) {

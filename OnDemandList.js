@@ -3,12 +3,11 @@ define([
 	'./_StoreMixin',
 	'dojo/_base/declare',
 	'dojo/_base/lang',
-	'dojo/dom-construct',
 	'dojo/on',
 	'dojo/when',
-    'dojo/Deferred',
-	'./util/misc'
-], function (List, _StoreMixin, declare, lang, domConstruct, on, when,Deferred,miscUtil) {
+	'./util/misc',
+	'put-selector/put'
+], function (List, _StoreMixin, declare, lang, on, when, miscUtil, put) {
 
 	return declare([ List, _StoreMixin ], {
 		// summary:
@@ -69,10 +68,7 @@ define([
 		//		specific calls to refresh.
 		keepScrollPosition: false,
 
-		// rowHeight: Number
-		//		Average row height, computed in renderQuery during the rendering of
-		//		the first range of data.
-		rowHeight: 0,
+		rowHeight: 22,
 
 		postCreate: function () {
 			this.inherited(arguments);
@@ -114,18 +110,15 @@ define([
 
 			// Initial query; set up top and bottom preload nodes
 			var topPreload = {
-				node: domConstruct.create('div', {
-					className: 'dgrid-preload',
-					style: { height: '0' }
-				}, container),
+				node: put(container, 'div.dgrid-preload', {
+					rowIndex: 0
+				}),
 				count: 0,
 				query: query,
 				next: preload
 			};
-			topPreload.node.rowIndex = 0;
-			preload.node = preloadNode = domConstruct.create('div', {
-				className: 'dgrid-preload'
-			}, container);
+			topPreload.node.style.height = '0';
+			preload.node = preloadNode = put(container, 'div.dgrid-preload');
 			preload.previous = topPreload;
 
 			// this preload node is used to represent the area of the grid that hasn't been
@@ -153,12 +146,8 @@ define([
 				this.preload = preload;
 			}
 
-			var loadingNode = domConstruct.create('div', {
-					className: 'dgrid-loading'
-				}, preloadNode, 'before'),
-				innerNode = domConstruct.create('div', {
-					className: 'dgrid-below'
-				}, loadingNode);
+			var loadingNode = put(preloadNode, '-div.dgrid-loading'),
+				innerNode = put(loadingNode, 'div.dgrid-below');
 			innerNode.innerHTML = this.loadingMessage;
 
 			// Establish query options, mixing in our own.
@@ -168,135 +157,67 @@ define([
 			// Protect the query within a _trackError call, but return the resulting collection
 			return this._trackError(function () {
 				var results = query(options);
-                if(!results.totalLength){
-                    var total = new Deferred();
-                    total.resolve(10);
-                    results.totalLength=total;
-                }
+
 				// Render the result set
 				return self.renderQueryResults(results, preloadNode, options).then(function (trs) {
+					return when(results.totalLength, function (total) {
+						var trCount = trs.length,
+							parentNode = preloadNode.parentNode,
+							noDataNode = self.noDataNode;
 
-                    if(results.totalLength) {
-                        return results.totalLength.then(function (total) {
-                            var trCount = trs.length,
-                                parentNode = preloadNode.parentNode,
-                                noDataNode = self.noDataNode;
+						if (self._rows) {
+							self._rows.min = 0;
+							self._rows.max = trCount === total ? Infinity : trCount - 1;
+						}
 
-                            if (self._rows) {
-                                self._rows.min = 0;
-                                self._rows.max = trCount === total ? Infinity : trCount - 1;
-                            }
+						put(loadingNode, '!');
+						if (!('queryLevel' in options)) {
+							self._total = total;
+						}
+						// now we need to adjust the height and total count based on the first result set
+						if (total === 0 && parentNode) {
+							if (noDataNode) {
+								put(noDataNode, '!');
+								delete self.noDataNode;
+							}
+							self.noDataNode = noDataNode = put('div.dgrid-no-data');
+							parentNode.insertBefore(noDataNode, self._getFirstRowSibling(parentNode));
+							noDataNode.innerHTML = self.noDataMessage;
+						}
+						var height = 0;
+						for (var i = 0; i < trCount; i++) {
+							height += self._calcRowHeight(trs[i]);
+						}
+						// only update rowHeight if we actually got results and are visible
+						if (trCount && height) {
+							self.rowHeight = height / trCount;
+						}
 
-                            domConstruct.destroy(loadingNode);
-                            if (!('queryLevel' in options)) {
-                                self._total = total;
-                            }
-                            // now we need to adjust the height and total count based on the first result set
-                            if (total === 0 && parentNode) {
-                                if (noDataNode) {
-                                    domConstruct.destroy(noDataNode);
-                                    delete self.noDataNode;
-                                }
-                                self.noDataNode = noDataNode = domConstruct.create('div', {
-                                    className: 'dgrid-no-data',
-                                    innerHTML: self.noDataMessage
-                                });
-                                parentNode.insertBefore(noDataNode, self._getFirstRowSibling(parentNode));
-                            }
-                            var height = 0;
-                            for (var i = 0; i < trCount; i++) {
-                                height += self._calcRowHeight(trs[i]);
-                            }
-                            // only update rowHeight if we actually got results and are visible
-                            if (trCount && height) {
-                                self.rowHeight = height / trCount;
-                            }
+						total -= trCount;
+						preload.count = total;
+						preloadNode.rowIndex = trCount;
+						if (total) {
+							preloadNode.style.height = Math.min(total * self.rowHeight, self.maxEmptySpace) + 'px';
+						}
+						else {
+							preloadNode.style.display = 'none';
+						}
 
-                            total -= trCount;
-                            preload.count = total;
-                            preloadNode.rowIndex = trCount;
-                            if (total) {
-                                preloadNode.style.height = Math.min(total * self.rowHeight, self.maxEmptySpace) + 'px';
-                            }
-                            else {
-                                preloadNode.style.display = 'none';
-                            }
+						if (self._previousScrollPosition) {
+							// Restore position after a refresh operation w/ keepScrollPosition
+							self.scrollTo(self._previousScrollPosition);
+							delete self._previousScrollPosition;
+						}
 
-                            if (self._previousScrollPosition) {
-                                // Restore position after a refresh operation w/ keepScrollPosition
-                                self.scrollTo(self._previousScrollPosition);
-                                delete self._previousScrollPosition;
-                            }
-
-                            // Redo scroll processing in case the query didn't fill the screen,
-                            // or in case scroll position was restored
-                            return when(self._processScroll()).then(function () {
-                                return trs;
-                            });
-                        });
-                    }else{
-                        console.error('asdf');
-                        var trCount = trs.length,
-                            total = trCount,
-                            parentNode = preloadNode.parentNode,
-                            noDataNode = self.noDataNode;
-
-                        if (self._rows) {
-                            self._rows.min = 0;
-                            self._rows.max = trCount === total ? Infinity : trCount - 1;
-                        }
-
-                        domConstruct.destroy(loadingNode);
-                        if (!('queryLevel' in options)) {
-                            self._total = total;
-                        }
-                        // now we need to adjust the height and total count based on the first result set
-                        if (total === 0 && parentNode) {
-                            if (noDataNode) {
-                                domConstruct.destroy(noDataNode);
-                                delete self.noDataNode;
-                            }
-                            self.noDataNode = noDataNode = domConstruct.create('div', {
-                                className: 'dgrid-no-data',
-                                innerHTML: self.noDataMessage
-                            });
-                            parentNode.insertBefore(noDataNode, self._getFirstRowSibling(parentNode));
-                        }
-                        var height = 0;
-                        for (var i = 0; i < trCount; i++) {
-                            height += self._calcRowHeight(trs[i]);
-                        }
-                        // only update rowHeight if we actually got results and are visible
-                        if (trCount && height) {
-                            self.rowHeight = height / trCount;
-                        }
-
-                        total -= trCount;
-                        preload.count = total;
-                        preloadNode.rowIndex = trCount;
-                        if (total) {
-                            preloadNode.style.height = Math.min(total * self.rowHeight, self.maxEmptySpace) + 'px';
-                        }
-                        else {
-                            preloadNode.style.display = 'none';
-                        }
-
-                        if (self._previousScrollPosition) {
-                            // Restore position after a refresh operation w/ keepScrollPosition
-                            self.scrollTo(self._previousScrollPosition);
-                            delete self._previousScrollPosition;
-                        }
-
-                        // Redo scroll processing in case the query didn't fill the screen,
-                        // or in case scroll position was restored
-                        return when(self._processScroll()).then(function () {
-                            return trs;
-                        });
-                    }
-
+						// Redo scroll processing in case the query didn't fill the screen,
+						// or in case scroll position was restored
+						return when(self._processScroll()).then(function () {
+							return trs;
+						});
+					});
 				}).otherwise(function (err) {
 					// remove the loadingNode and re-throw
-					domConstruct.destroy(loadingNode);
+					put(loadingNode, '!');
 					throw err;
 				});
 			});
@@ -364,12 +285,12 @@ define([
 			var collection = this._renderedCollection;
 
 			if (collection && collection.releaseRange) {
-				rows.then(function (resolvedRows) {
+				when(rows, function (resolvedRows) {
 					if (resolvedRows[0] && !resolvedRows[0].parentNode.tagName) {
 						// Release this range, since it was never actually rendered;
 						// need to wait until totalLength promise resolves, since
 						// Trackable only adds the range then to begin with
-						results.totalLength.then(function () {
+						when(results.totalLength, function () {
 							collection.releaseRange(resolvedRows[0].rowIndex,
 								resolvedRows[resolvedRows.length - 1].rowIndex + 1);
 						});
@@ -412,11 +333,6 @@ define([
 			// summary:
 			//		Checks to make sure that everything in the viewable area has been
 			//		downloaded, and triggering a request for the necessary data when needed.
-
-			if (!this.rowHeight) {
-				return;
-			}
-
 			var grid = this,
 				scrollNode = grid.bodyNode,
 				// grab current visible top from event if provided, otherwise from node
@@ -512,13 +428,10 @@ define([
 					}
 					// we remove the elements after expanding the preload node so that
 					// the contraction doesn't alter the scroll position
-					var trashBin = document.createElement('div');
-					for (var i = toDelete.length; i--;) {
-						trashBin.appendChild(toDelete[i]);
-					}
+					var trashBin = put('div', toDelete);
 					setTimeout(function () {
 						// we can defer the destruction until later
-						domConstruct.destroy(trashBin);
+						put(trashBin, '!');
 					}, 1);
 				}
 			}
@@ -657,14 +570,10 @@ define([
 					}
 
 					// create a loading node as a placeholder while the data is loaded
-					var loadingNode = domConstruct.create('div', {
-						className: 'dgrid-loading',
-						style: { height: count * grid.rowHeight + 'px' }
-					}, beforeNode, 'before');
-					domConstruct.create('div', {
-						className: 'dgrid-' + (below ? 'below' : 'above'),
-						innerHTML: grid.loadingMessage
-					}, loadingNode);
+					var loadingNode = put(beforeNode,
+						'-div.dgrid-loading[style=height:' + count * grid.rowHeight + 'px]');
+					var innerNode = put(loadingNode, 'div.dgrid-' + (below ? 'below' : 'above'));
+					innerNode.innerHTML = grid.loadingMessage;
 					loadingNode.count = count;
 
 					// Query now to fill in these rows.
@@ -696,7 +605,7 @@ define([
 
 								// can remove the loading node now
 								beforeNode = loadingNode.nextSibling;
-								domConstruct.destroy(loadingNode);
+								put(loadingNode, '!');
 								// beforeNode may have been removed if the query results loading node was removed
 								// as a distant node before rendering
 								if (keepScrollTo && beforeNode && beforeNode.offsetWidth) {
@@ -714,7 +623,7 @@ define([
 									});
 								}
 
-								rangeResults.totalLength.then(function (total) {
+								when(rangeResults.totalLength, function (total) {
 									if (!('queryLevel' in options)) {
 										grid._total = total;
 										if (grid._rows && grid._rows.max >= grid._total - 1) {
@@ -737,7 +646,7 @@ define([
 								grid._processScroll();
 								return rows;
 							}, function (e) {
-								domConstruct.destroy(loadingNode);
+								put(loadingNode, '!');
 								throw e;
 							});
 						})(loadingNode, below, keepScrollTo);

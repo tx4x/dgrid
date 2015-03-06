@@ -1,14 +1,15 @@
 define([
 	'dojo/_base/declare',
 	'dojo/_base/lang',
-	'dojo/dom-construct',
 	'dojo/on',
 	'dojo/aspect',
 	'dojo/query',
 	'dojo/has',
 	'./util/misc',
+	'put-selector/put',
 	'dojo/_base/sniff'
-], function (declare, lang, domConstruct, on, aspect, query, has, miscUtil) {
+	/*'xstyle/css!./css/columnset.css'*/
+], function (declare, lang, on, aspect, query, has, miscUtil, put) {
 	has.add('event-mousewheel', function (global, document, element) {
 		return 'onmousewheel' in element;
 	});
@@ -187,18 +188,12 @@ define([
 		columnSets: [],
 
 		createRowCells: function (tag, each, subRows, object) {
-			var row = domConstruct.create('table', { className: 'dgrid-row-table' });
-			var tbody = domConstruct.create('tbody', null, row);
-			var tr = domConstruct.create('tr', null, tbody);
+			var row = put('table.dgrid-row-table');
+			var tr = put(row, 'tbody tr');
 			for (var i = 0, l = this.columnSets.length; i < l; i++) {
 				// iterate through the columnSets
-				var cell = domConstruct.create(tag, {
-					className: 'dgrid-column-set-cell dgrid-column-set-' + i
-				}, tr);
-				cell = domConstruct.create('div', {
-					className: 'dgrid-column-set'
-				}, cell);
-				cell.setAttribute(colsetidAttr, i);
+				var cell = put(tr, tag + '.dgrid-column-set-cell.dgrid-column-set-' + i +
+					' div.dgrid-column-set[' + colsetidAttr + '=' + i + ']');
 				var subset = getColumnSetSubRows(subRows || this.subRows, i) || this.columnSets[i];
 				cell.appendChild(this.inherited(arguments, [tag, each, subset, object]));
 			}
@@ -240,15 +235,13 @@ define([
 			if (scrollers) {
 				// this isn't the first time; destroy existing scroller nodes first
 				for (i in scrollers) {
-					domConstruct.destroy(scrollers[i]);
+					put(scrollers[i], '!');
 				}
 			} else {
 				// first-time-only operations: hook up event/aspected handlers
 				aspect.after(this, 'resize', reposition, true);
 				aspect.after(this, 'styleColumn', reposition, true);
-				this._columnSetScrollerNode = domConstruct.create('div', {
-					className: 'dgrid-column-set-scroller-container'
-				}, this.footerNode, 'after');
+				this._columnSetScrollerNode = put(this.footerNode, '+div.dgrid-column-set-scroller-container');
 			}
 
 			// reset to new object to be populated in loop below
@@ -341,14 +334,10 @@ define([
 
 		_putScroller: function (columnSet, i) {
 			// function called for each columnSet
-			var scroller = this._columnSetScrollers[i] = domConstruct.create('span', {
-				className: 'dgrid-column-set-scroller dgrid-column-set-scroller-' + i
-			}, this._columnSetScrollerNode);
-			scroller.setAttribute(colsetidAttr, i);
-
-			this._columnSetScrollerContents[i] = domConstruct.create('div', {
-				className: 'dgrid-column-set-scroller-content'
-			}, scroller);
+			var scroller = this._columnSetScrollers[i] =
+				put(this._columnSetScrollerNode, 'span.dgrid-column-set-scroller.dgrid-column-set-scroller-' + i +
+					'[' + colsetidAttr + '=' + i + ']');
+			this._columnSetScrollerContents[i] = put(scroller, 'div.dgrid-column-set-scroller-content');
 			on(scroller, 'scroll', lang.hitch(this, '_onColumnSetScroll'));
 		},
 

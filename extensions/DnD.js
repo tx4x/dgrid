@@ -3,7 +3,6 @@ define([
 	'dojo/_base/lang',
 	'dojo/_base/array',
 	'dojo/aspect',
-	'dojo/dom-class',
 	'dojo/on',
 	'dojo/topic',
 	'dojo/has',
@@ -11,11 +10,13 @@ define([
 	'dojo/dnd/Source',
 	'dojo/dnd/Manager',
 	'dojo/_base/NodeList',
+	'put-selector/put',
 	'../Selection',
 	'dojo/has!touch?../util/touch',
 	'dojo/has!touch?./_DnD-touch-autoscroll'
-], function (declare, lang, arrayUtil, aspect, domClass, on, topic, has, when, DnDSource,
-		DnDManager, NodeList, Selection, touchUtil) {
+	/*'xstyle/css!dojo/resources/dnd.css'*/
+], function (declare, lang, arrayUtil, aspect, on, topic, has, when, DnDSource,
+		DnDManager, NodeList, put, Selection, touchUtil) {
 	// Requirements
 	// * requires a store (sounds obvious, but not all Lists/Grids have stores...)
 	// * must support options.before in put calls
@@ -263,7 +264,7 @@ define([
 				delete selectedNodes[row.id];
 				// Re-sync dojo/dnd UI classes based on deselection
 				// (unfortunately there is no good programmatic hook for this)
-				domClass.remove(row.element, 'dojoDndItemSelected dojoDndItemAnchor');
+				put(row.element, '!dojoDndItemSelected!dojoDndItemAnchor');
 			}
 
 			this.on('dgrid-select', function (event) {
@@ -286,7 +287,7 @@ define([
 				type = typeof this.getObjectDndType === 'function' ?
 					this.getObjectDndType(object) : [this.dndSourceType];
 
-			domClass.add(row, 'dojoDndItem');
+			put(row, '.dojoDndItem');
 			this.dndSource.setItem(row.id, {
 				data: object,
 				type: type instanceof Array ? type : [type]

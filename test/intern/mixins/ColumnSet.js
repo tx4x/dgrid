@@ -7,8 +7,7 @@ define([
 	'dgrid/test/data/createSyncStore',
 	'dgrid/OnDemandGrid',
 	'dgrid/ColumnSet',
-	'dgrid/Keyboard',
-	'../addCss'
+	'dgrid/Keyboard'
 ], function (test, assert, declare, aspect, query, createSyncStore, OnDemandGrid, ColumnSet, Keyboard) {
 	var grid;
 	var handles;

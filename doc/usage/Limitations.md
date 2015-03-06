@@ -4,7 +4,16 @@
 
 The dgrid package was designed primarily with AMD in mind; as such, it has been
 tested primarily using the `require` and `define` APIs available in Dojo 1.7+.
-Use with the legacy `dojo.require` API is discouraged, and not officially supported.
+
+When using the legacy `dojo.require` method instead, loading `dgrid/List` will
+not work without first loading `dgrid.css`.  This is because otherwise the
+`xstyle/css` plugin will resolve asynchronously, which is not suported by the
+legacy loader.  To use `dgrid/List` with `dojo.require`, make sure you have
+`<link rel="stylesheet" href="path/to/dgrid.css">` in your `<head>` before
+loading `dgrid/List`.
+
+This also applies for stylesheets loaded by specific mixins (such as `dgrid/ColumnSet`)
+or extensions (such as `dgrid/extensions/ColumnResizer`).
 
 ## Reuse of Column Definitions
 

@@ -1,29 +1,21 @@
-var copyOnlyMids = {
-	'dgrid/Gruntfile': 1,
-	'dgrid/package': 1
-};
-var miniExcludeMids = {
-	'dgrid/CHANGES.md': 1,
-	'dgrid/LICENSE': 1,
-	'dgrid/README.md': 1,
-	'dgrid/Gruntfile': 1,
-	'dgrid/package': 1
-};
+/* exported profile */
+
+var miniExcludes = {
+		'dgrid/CHANGES.md': 1,
+		'dgrid/LICENSE': 1,
+		'dgrid/README.md': 1,
+		'dgrid/package': 1
+	},
+	isTestRe = /\/test\//;
 
 var profile = {
 	resourceTags: {
-		copyOnly: function (filename, mid) {
-			return mid in copyOnlyMids;
-		},
-
 		test: function (filename) {
-			return /\/test\//.test(filename);
+			return isTestRe.test(filename);
 		},
 
 		miniExclude: function (filename, mid) {
-			return (/\/(?:test|demos)\//).test(filename) ||
-				(/\.styl$/).test(filename) ||
-			 	mid in miniExcludeMids;
+			return (/\/(?:test|demos)\//).test(filename) || mid in miniExcludes;
 		},
 
 		amd: function (filename) {

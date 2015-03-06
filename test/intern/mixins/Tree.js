@@ -10,15 +10,13 @@ define([
 	'dojo/_base/lang',
 	'dojo/aspect',
 	'dojo/Deferred',
-	'dojo/dom-class',
-	'dojo/dom-construct',
 	'dojo/dom-style',
 	'dojo/on',
 	'dojo/query',
-	'dgrid/test/data/createHierarchicalStore',
-	'../addCss'
+	'put-selector/put',
+	'dgrid/test/data/createHierarchicalStore'
 ], function (test, assert, OnDemandGrid, Editor, Tree, has, miscUtil, declare, lang, aspect, Deferred,
-		domClass, domConstruct, domStyle, on, query, createHierarchicalStore) {
+		domStyle, on, query, put, createHierarchicalStore) {
 
 	var grid,
 		testDelay = 15,
@@ -76,7 +74,7 @@ define([
 				{ label: 'value', field: 'value'}
 			]
 		}, options && options.gridOptions));
-		document.body.appendChild(grid.domNode);
+		put(document.body, grid.domNode);
 		grid.startup();
 	}
 
@@ -281,7 +279,7 @@ define([
 					// * Adds the "test-expando" class
 					// * Floats the expando at the opposite end of the cell
 					var node = grid._defaultRenderExpando.apply(this, arguments);
-					domClass.add(node, 'test-expando');
+					put(node, '.test-expando');
 					domStyle.set(node, 'float', 'right');
 					return node;
 				};
@@ -306,10 +304,8 @@ define([
 
 				createGrid({
 					treeColumnOptions: {
-						renderCell: function (object, value) {
-							var div = domConstruct.create('div', { className: 'testRenderCell' });
-							div.appendChild(document.createTextNode(value));
-							return div;
+						renderCell: function (rowObject, cellValue) {
+							return put('div.testRenderCell', cellValue);
 						}
 					}
 				});
@@ -325,8 +321,7 @@ define([
 				createGrid({
 					treeColumnOptions: {
 						renderCell: function (rowObject, cellValue, cellNode) {
-							domClass.add(cellNode, 'testRenderCell');
-							cellNode.appendChild(document.createTextNode(cellValue));
+							put(cellNode, '.testRenderCell', cellValue);
 						}
 					}
 				});

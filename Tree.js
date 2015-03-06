@@ -3,15 +3,14 @@ define([
 	'dojo/_base/lang',
 	'dojo/_base/array',
 	'dojo/aspect',
-	'dojo/dom-construct',
-	'dojo/dom-class',
 	'dojo/on',
 	'dojo/query',
 	'dojo/when',
 	'./util/has-css3',
 	'./Grid',
-	'dojo/has!touch?./util/touch'
-], function (declare, lang, arrayUtil, aspect, domConstruct, domClass, on, querySelector, when, has, Grid, touchUtil) {
+	'dojo/has!touch?./util/touch',
+	'put-selector/put'
+], function (declare, lang, arrayUtil, aspect, on, querySelector, when, has, Grid, touchUtil, put) {
 
 	return declare(null, {
 		// collapseOnRefresh: Boolean
@@ -70,9 +69,9 @@ define([
 				var expanded = expand === undefined ? !this._expanded[row.id] : expand;
 
 				// update the expando display
-				domClass.replace(target, 'ui-icon-triangle-1-' + (expanded ? 'se' : 'e'),
-					'ui-icon-triangle-1-' + (expanded ? 'e' : 'se'));
-				domClass.toggle(row.element, 'dgrid-row-expanded', expanded);
+				put(target, '.ui-icon-triangle-1-' + (expanded ? 'se' : 'e') +
+					'!ui-icon-triangle-1-' + (expanded ? 'e' : 'se'));
+				put(row.element, (expanded ? '.' : '!') + 'dgrid-row-expanded');
 
 				var rowElement = row.element,
 					container = rowElement.connected,
@@ -84,7 +83,7 @@ define([
 					// if the children have not been created, create a container, a preload node and do the
 					// query for the children
 					container = options.container = rowElement.connected =
-						domConstruct.create('div', { className: 'dgrid-tree-container' }, rowElement, 'after');
+						put(rowElement, '+div.dgrid-tree-container');
 					var query = function (options) {
 						var childCollection = grid._renderedCollection.getChildren(row.data),
 							results;
@@ -126,7 +125,7 @@ define([
 						// If not using OnDemandList, we don't need preload nodes,
 						// but we still need a beforeNode to pass to renderArray,
 						// so create a temporary one
-						var firstChild = domConstruct.create('div', null, container);
+						var firstChild = put(container, 'div');
 						promise = this._trackError(function () {
 							return grid.renderQueryResults(
 								query(options),
@@ -135,7 +134,7 @@ define([
 									'level' in query ? { queryLevel: query.level } : null
 								)
 							).then(function (rows) {
-								domConstruct.destroy(firstChild);
+								put(firstChild, '!');
 								return rows;
 							});
 						});
@@ -168,12 +167,12 @@ define([
 					else {
 						// if it will be hidden we need to be able to give a full height
 						// without animating it, so it has the right starting point to animate to zero
-						domClass.add(container, 'dgrid-tree-resetting');
+						put(container, '.dgrid-tree-resetting');
 						containerStyle.height = container.scrollHeight + 'px';
 					}
 					// Perform a transition for the expand or collapse.
 					setTimeout(function () {
-						domClass.remove(container, 'dgrid-tree-resetting');
+						put(container, '!dgrid-tree-resetting');
 						containerStyle.height =
 							expanded ? (scrollHeight ? scrollHeight + 'px' : 'auto') : '0px';
 					}, 0);
@@ -247,7 +246,7 @@ define([
 				}
 
 				if (!preserveDom) {
-					domConstruct.destroy(connected);
+					put(connected, '!');
 				}
 			}
 
@@ -355,8 +354,8 @@ define([
 
 				node = originalRenderCell.call(column, object, value, td, options);
 				if (node && node.nodeType) {
-					td.appendChild(expando);
-					td.appendChild(node);
+					put(td, expando);
+					put(td, node);
 				}
 				else {
 					td.insertBefore(expando, td.firstChild);
@@ -379,15 +378,15 @@ define([
 			//		The item that this expando pertains to
 
 			var dir = this.grid.isRTL ? 'right' : 'left',
-				cls = 'dgrid-expando-icon';
+				cls = '.dgrid-expando-icon',
+				node;
 			if (hasChildren) {
-				cls += ' ui-icon ui-icon-triangle-1-' + (expanded ? 'se' : 'e');
+				cls += '.ui-icon.ui-icon-triangle-1-' + (expanded ? 'se' : 'e');
 			}
-			return domConstruct.create('div', {
-				className: cls,
-				innerHTML: '&nbsp;',
-				style: 'margin-' + dir + ': ' + (level * this.grid.treeIndentWidth) + 'px; float: ' + dir + ';'
-			});
+			node = put('div' + cls + '[style=margin-' + dir + ': ' +
+				(level * this.grid.treeIndentWidth) + 'px; float: ' + dir + ']');
+			node.innerHTML = '&nbsp;';
+			return node;
 		},
 
 		_onTreeTransitionEnd: function (event) {
@@ -405,10 +404,10 @@ define([
 				// For browsers with CSS transition support, setting the height to
 				// auto or "" will cause an animation to zero height for some
 				// reason, so temporarily set the transition to be zero duration
-				domClass.add(this, 'dgrid-tree-resetting');
+				put(this, '.dgrid-tree-resetting');
 				setTimeout(function () {
 					// Turn off the zero duration transition after we have let it render
-					domClass.remove(container, 'dgrid-tree-resetting');
+					put(container, '!dgrid-tree-resetting');
 				}, 0);
 			}
 			// Now set the height to auto

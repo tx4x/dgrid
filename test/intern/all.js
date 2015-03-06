@@ -5,7 +5,6 @@ define([
 	'intern/node_modules/dojo/has!host-browser?./core/columns',
 	'intern/node_modules/dojo/has!host-browser?./core/stores',
 	'intern/node_modules/dojo/has!host-browser?./core/_StoreMixin',
-	'intern/node_modules/dojo/has!host-browser?./core/OnDemandList',
 	'intern/node_modules/dojo/has!host-browser?./core/trackable',
 	'intern/node_modules/dojo/has!host-browser?./extensions/CompoundColumns',
 	'intern/node_modules/dojo/has!host-browser?./extensions/Pagination',

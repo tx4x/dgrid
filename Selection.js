@@ -1,14 +1,14 @@
 define([
 	'dojo/_base/declare',
-	'dojo/dom-class',
 	'dojo/on',
 	'dojo/has',
 	'dojo/aspect',
 	'./List',
 	'dojo/has!touch?./util/touch',
+	'put-selector/put',
 	'dojo/query',
 	'dojo/_base/sniff'
-], function (declare, domClass, on, has, aspect, List, touchUtil) {
+], function (declare, on, has, aspect, List, touchUtil, put) {
 
 	has.add('dom-comparedocumentposition', function (global, doc, element) {
 		return !!element.compareDocumentPosition;
@@ -543,11 +543,11 @@ define([
 				if (element) {
 					// add or remove classes as appropriate
 					if (value) {
-						domClass.add(element, 'dgrid-selected' +
-							(this.addUiClasses ? ' ui-state-active' : ''));
+						put(element, '.dgrid-selected' +
+							(this.addUiClasses ? '.ui-state-active' : ''));
 					}
 					else {
-						domClass.remove(element, 'dgrid-selected ui-state-active');
+						put(element, '!dgrid-selected!ui-state-active');
 					}
 				}
 				if (value !== previousValue && element) {

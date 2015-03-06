@@ -6,8 +6,9 @@ define([
 	'dojo/dom-class',
 	'dojo/query',
 	'../../data/createSyncStore',
-	'dgrid/OnDemandList'
-], function (test, assert, declare, aspect, domClass, query, createSyncStore, OnDemandList) {
+	'dgrid/OnDemandList',
+	'put-selector/put'
+], function (test, assert, declare, aspect, domClass, query, createSyncStore, OnDemandList, put) {
 
 	var widget,
 		storeCounter = 0;
@@ -43,19 +44,15 @@ define([
 		});
 	}
 
-	function renderRow(object) {
-		var div = document.createElement('div');
-		div.appendChild(document.createTextNode(object.value));
-		return div;
-	}
-
 	function createList(numStoreItems, itemsPerQuery, overlap, shouldTrackCollection) {
 		widget = new OnDemandList({
 			collection: createStore(numStoreItems),
 			minRowsPerPage: itemsPerQuery,
 			maxRowsPerPage: itemsPerQuery,
 			queryRowsOverlap: overlap,
-			renderRow: renderRow,
+			renderRow: function (object) {
+				return put('div', object.value);
+			},
 			shouldTrackCollection: shouldTrackCollection !== false,
 			sort: 'id'
 		});
@@ -309,7 +306,9 @@ define([
 			var store = createSyncStore({ data: data });
 			widget = new OnDemandList({
 				collection: store.filter({ enabled: true }),
-				renderRow: renderRow
+				renderRow: function (object) {
+					return put('div', object.value);
+				}
 			});
 			document.body.appendChild(widget.domNode);
 			widget.startup();

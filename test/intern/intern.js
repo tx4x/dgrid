@@ -50,12 +50,13 @@ define([
 				{ name: 'dojo', location: 'dojo' },
 				{ name: 'dijit', location: 'dijit' },
 				{ name: 'dgrid', location: 'dgrid' },
-				{ name: 'dstore', location: 'dstore' }
+				{ name: 'put-selector', location: 'put-selector' },
+				{ name: 'xstyle', location: 'xstyle' }
 			]
 		},
 
 		// A regular expression matching URLs to files that should not be included in code coverage analysis
-		excludeInstrumentation: /^dojox?|^dijit|^dstore|\/node_modules\/|\/test\/|\/nls\//,
+		excludeInstrumentation: /^dojox?|^dijit|^dstore|^xstyle|^put-selector|\/test\/|\/nls\//,
 
 		// Non-functional test suite(s) to run in each browser
 		suites: [ 'dgrid/test/intern/all' ],
