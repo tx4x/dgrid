@@ -12,6 +12,7 @@ define([
 	// components, e.g. OnDemandList/Grid and the Pagination extension.
 
 	function emitError(err) {
+        return;
 		// called by _trackError in context of list/grid, if an error is encountered
 		if (typeof err !== 'object') {
 			// Ensure we actually have an error object, so we can attach a reference.
