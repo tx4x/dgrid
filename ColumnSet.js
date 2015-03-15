@@ -25,6 +25,13 @@ define([
 		});
 	}
 
+	function scrollColumnSetTo(grid, columnSetNode, offsetLeft) {
+		var id = columnSetNode.getAttribute(colsetidAttr);
+		var scroller = grid._columnSetScrollers[id];
+
+		scroller.scrollLeft = offsetLeft < 0 ? 0 : offsetLeft;
+	}
+
 	function getColumnSetSubRows(subRows, columnSetId) {
 		// Builds a subRow collection that only contains columns that correspond to
 		// a given column set id.

@@ -41,16 +41,18 @@
 					var CustomGrid = declare([Grid, Selection, Keyboard, Editor, Tree]);
 
 					function createStore(config){
-						var store = new declare([ Rest, Trackable, Cache, TreeStore ])(lang.mixin({
+						var store = new declare([ Rest,TreeStore ])(lang.mixin({
 							target:"./data/rest.php",
 							put: function(object){
 								return object;
 							}
 						}, config));
 
+                        /*
 						store.getRootCollection = function () {
 							return this.root.filter({ parent: undefined });
 						};
+                        */
 
 						return store;
 					}

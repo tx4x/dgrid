@@ -11,9 +11,7 @@ define([
 	//		instances. If delay is set, the Deferreds will be resolved asynchronously after delay +/-50%
 	//		milliseconds to simulate network requests that may come back out of order.
 	var AsyncStore = declare(Memory, {
-		delay: 200,
 		randomizeDelay: false,
-
 		fetch: function () {
 			var actualData = this.fetchSync();
 			var actualTotal = actualData.totalLength;
@@ -26,9 +24,11 @@ define([
 			function resolveTotal() {
 				totalDeferred.resolve(actualTotal);
 			}
+            resultsDeferred.resolve(actualData);
+            totalDeferred.resolve(actualTotal);
 
-			setTimeout(resolveTotal, this.delay * (this.randomizeDelay ? Math.random() + 0.5 : 1));
-			setTimeout(resolveResults, this.delay * (this.randomizeDelay ? Math.random() + 0.5 : 1));
+			//setTimeout(resolveTotal, this.delay * (this.randomizeDelay ? Math.random() + 0.5 : 1));
+			//setTimeout(resolveResults, this.delay * (this.randomizeDelay ? Math.random() + 0.5 : 1));
 
 			return new QueryResults(resultsDeferred, {
 				totalLength: totalDeferred

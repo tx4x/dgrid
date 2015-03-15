@@ -88,11 +88,9 @@ define([
 					var query = function (options) {
 						var childCollection = grid._renderedCollection.getChildren(row.data),
 							results;
-						/*
-                        if (grid.sort) {
+						if (grid.sort) {
 							childCollection = childCollection.sort(grid.sort);
 						}
-						*/
 						if (childCollection.track && grid.shouldTrackCollection) {
 							container._rows = options.rows = [];
 
