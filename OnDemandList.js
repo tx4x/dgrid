@@ -71,7 +71,7 @@ define([
 		// rowHeight: Number
 		//		Average row height, computed in renderQuery during the rendering of
 		//		the first range of data.
-		rowHeight: 0,
+		rowHeight: 22,
 
 		postCreate: function () {
 			this.inherited(arguments);
