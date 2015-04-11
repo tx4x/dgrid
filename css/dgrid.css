@@ -16,6 +16,8 @@
   position: absolute;
   top: 0;
   right: 0;
+
+  height: 24px !important;
 }
 .dgrid-footer {
   position: absolute;
@@ -69,7 +71,7 @@
 }
 .dgrid-scroller {
   overflow-x: auto;
-  overflow-y: scroll;
+  /*overflow-y: scroll;*/
   position: absolute;
   top: 0px;
   margin-top: 25px;
