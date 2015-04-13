@@ -17,7 +17,8 @@
   top: 0;
   right: 0;
 
-  height: 24px !important;
+  /*height: 24px !important;*/
+
 }
 .dgrid-footer {
   position: absolute;
