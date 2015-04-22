@@ -17,6 +17,21 @@ define([
 		hasGridCellClass = /\bdgrid-cell\b/,
 		hasGridRowClass = /\bdgrid-row\b/;
 
+    has.add("dom-contains", function(global, doc, element){
+        return !!element.contains; // not supported by FF < 9
+    });
+
+    function contains(parent, node){
+        // summary:
+        //		Checks to see if an element is contained by another element.
+
+        if(has("dom-contains")){
+            return parent.contains(node);
+        }else{
+            return parent.compareDocumentPosition(node) & 8 /* DOCUMENT_POSITION_CONTAINS */;
+        }
+    }
+
 	var Keyboard = declare(null, {
 		// summary:
 		//		Adds keyboard navigation capability to a list or grid.
