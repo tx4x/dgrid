@@ -666,6 +666,11 @@ define([
 				object = this.row(object);
 			}
 
+            if (typeof object === 'undefined' || object === null) {
+                return false;
+            }
+
+
 			// First check whether the given row is indicated in the selection hash;
 			// failing that, check if allSelected is true (testing against the
 			// allowSelect method if possible)
