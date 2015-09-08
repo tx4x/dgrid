@@ -446,6 +446,14 @@ define([
 
 			var handles = [
 				collection.on('delete, update', function (event) {
+/*
+                    console.log('update ',self.id);
+                    var _a = self;
+                    var _rows = rows;
+                    if(self.id==='xcf_views_DriverTreeView_0'){
+                        console.log('driver!');
+                    }*/
+
 					var from = event.previousIndex;
 					var to = event.index;
 
@@ -484,7 +492,8 @@ define([
 				}),
 
 				collection.on('add, update', function (event) {
-					var from = event.previousIndex;
+
+                    var from = event.previousIndex;
 					var to = event.index;
 					var nextNode;
 
@@ -533,6 +542,15 @@ define([
 				}),
 
 				collection.on('add, delete, update', function (event) {
+                    /*
+                    console.log('update 3',self.id);
+                    var _a = self;
+                    var _rows = rows;
+                    if(self.id==='xcf_views_DriverTreeView_0'){
+                        console.log('driver 3!');
+                    }
+                    */
+
 					var from = (typeof event.previousIndex !== 'undefined') ? event.previousIndex : Infinity,
 						to = (typeof event.index !== 'undefined') ? event.index : Infinity,
 						adjustAtIndex = Math.min(from, to);

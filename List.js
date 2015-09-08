@@ -193,7 +193,8 @@ define([
 			}
 		},
 		buildRendering: function () {
-			var domNode = this.domNode,
+
+            var domNode = this.domNode,
 				addUiClasses = this.addUiClasses,
 				self = this,
 				headerNode,
@@ -211,11 +212,11 @@ define([
 
 			domNode.setAttribute('role', 'grid');
 			domClass.add(domNode, 'dgrid dgrid-' + this.listType +
-				(addUiClasses ? ' ui-widget' : ''))
+				(addUiClasses ? ' ui-widget' : ''));
 
 			// Place header node (initially hidden if showHeader is false).
 			headerNode = this.headerNode = domConstruct.create('div', {
-				className: 'dgrid-header dgrid-header-row' + (addUiClasses ? ' ui-widget-header' : '') +
+				className: 'dgrid-header dgrid-header-row widget' + (addUiClasses ? ' widget' : '') +
 					(this.showHeader ? '' : ' dgrid-header-hidden')
 			}, domNode);
 
@@ -230,9 +231,10 @@ define([
 				bodyNode.tabIndex = -1;
 			}
 
+
 			this.headerScrollNode = domConstruct.create('div', {
 				className: 'dgrid-header dgrid-header-scroll dgrid-scrollbar-width' +
-					(addUiClasses ? ' ui-widget-header' : '')
+					(addUiClasses ? ' widget' : '')
 			}, domNode);
 
 			// Place footer node (initially hidden if showFooter is false).
@@ -258,7 +260,7 @@ define([
 			this.renderHeader();
 
 			this.contentNode = this.touchNode = domConstruct.create('div', {
-				className: 'dgrid-content' + (addUiClasses ? ' ui-widget-content' : '')
+				className: 'dgrid-content' + (addUiClasses ? ' widget' : '')
 			}, this.bodyNode);
 
 			// add window resize handler, with reference for later removal if needed
@@ -316,7 +318,7 @@ define([
 				if (scrollbarWidth !== 17) {
 					// for modern browsers, we can perform a one-time operation which adds
 					// a rule to account for scrollbar width in all grid headers.
-					miscUtil.addCssRule('.dgrid-header-row', 'right: ' + scrollbarWidth + 'px');
+					//miscUtil.addCssRule('.dgrid-header-row', 'right: ' + scrollbarWidth + 'px');
 					// add another for RTL grids
 					miscUtil.addCssRule('.dgrid-rtl-swap .dgrid-header-row', 'left: ' + scrollbarWidth + 'px');
 				}
@@ -546,6 +548,10 @@ define([
 				return target; // No-op; already a row
 			}
 
+			if(!target){
+				console.error('target is null!',target);
+				return null;
+			}
 			if (target.target && target.target.nodeType) {
 				// Event
 				target = target.target;
@@ -586,6 +592,11 @@ define([
 			// Start at the element indicated by the provided row or cell object.
 			element = current = item.element;
 			steps = steps || 1;
+
+            //@TODO: weird bug in Thumb-Keyboard-Navigation
+            if(!element){
+                element = current = item.data.row.element;
+            }
 
 			do {
 				// Outer loop: move in the appropriate direction.

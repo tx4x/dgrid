@@ -98,6 +98,10 @@ define([
 
 			statusNode.tabIndex = 0;
 
+            if(this.addUiClasses){
+                domClass.add(this.footerNode,'ui-widget-content');
+            }
+
 			// Initialize UI based on pageSizeOptions and rowsPerPage
 			this._updatePaginationSizeSelect();
 			this._updateRowsPerPageOption();

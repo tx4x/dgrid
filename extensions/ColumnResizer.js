@@ -393,6 +393,7 @@ define([
 			}
 			dom.setSelectable(this.domNode, true);
 
+
 			var cell = this._targetCell,
 				delta = this._getResizeMouseLocation(e) - this._startX, //final change in position of resizer
 				newWidth = cell.offsetWidth + delta, //the new width after resize

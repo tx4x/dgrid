@@ -6,22 +6,17 @@ define([
     "dgrid/OnDemandList",
     "dgrid/OnDemandGrid",
     "dgrid/Keyboard",
-    "dgrid/extensions/ColumnHider",
     "dgrid/extensions/ColumnReorder",
     "dgrid/extensions/ColumnResizer",
     "dgrid/extensions/CompoundColumns",
     "dgrid/extensions/Pagination",
-
-
-
-    "put-selector/put",
-
-
+    "dgrid/extensions/DnD",
     "dstore/Store",
     "dstore/Memory",
     "dstore/Tree",
     "dstore/Cache",
-    "dstore/Trackable"
+    "dstore/Trackable",
+    "dstore/legacy/DstoreAdapter"
 
 ], function(){
     return dojo.dgrid;

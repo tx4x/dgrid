@@ -62,6 +62,10 @@ define([
 				}, 0);
 			}
 
+            if(!this._alwaysOnWidgetColumns){
+                this._alwaysOnWidgetColumns = [];
+            }
+
 			for (var i = this._alwaysOnWidgetColumns.length; i--;) {
 				// Destroy always-on editor widgets during the row removal operation,
 				// but don't trip over loading nodes from incomplete requests
