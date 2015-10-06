@@ -162,7 +162,7 @@ define([
 		}
 	};
 
-	return declare(null, {
+	return declare('dgrid.ColumnResizer',null, {
 		resizeNode: null,
 
 		// minWidth: Number
