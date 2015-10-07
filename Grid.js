@@ -374,6 +374,8 @@ define([
 		},
 
 		updateSortArrow: function (sort, updateSort) {
+            console.log('sort')
+            console.dir(arguments);
 			// summary:
 			//		Method responsible for updating the placement of the arrow in the
 			//		appropriate header cell.  Typically this should not be called (call

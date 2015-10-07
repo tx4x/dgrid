@@ -195,10 +195,6 @@ define([
 			if (this.collection) {
 				this.set('collection', this.collection);
 			}
-			else if (this.store) {
-				console.debug('_StoreMixin found store property but not collection; ' +
-					'this is often the sign of a mistake during migration from 0.3 to 0.4');
-			}
 		},
 
 		row: function () {

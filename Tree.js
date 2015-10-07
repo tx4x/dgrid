@@ -85,6 +85,7 @@ define([
 					// query for the children
 					container = options.container = rowElement.connected =
 						domConstruct.create('div', { className: 'dgrid-tree-container' }, rowElement, 'after');
+
 					var query = function (options) {
 						var childCollection = grid._renderedCollection.getChildren(row.data),
 							results;
