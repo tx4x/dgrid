@@ -151,8 +151,10 @@
 }
 
 .dgrid-selected {
-    background-color: rgba(187, 187, 187, 0.3);
+    background-color: rgba(55, 22, 0, 0.52) !important;
 }
+
+
 
 
 .dgrid-input {
