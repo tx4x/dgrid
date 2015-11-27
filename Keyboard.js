@@ -40,7 +40,7 @@ define([
 		//		Number of rows to jump by when page up or page down is pressed.
 		pageSkip: 10,
 
-		tabIndex: 0,
+		tabIndex: -1,
 
 		// keyMap: Object
 		//		Hash which maps key codes to functions to be executed (in the context
@@ -138,6 +138,7 @@ define([
 								break;
 							}
 						}
+
 
 						focusedNode.tabIndex = grid.tabIndex;
 						return rows;
