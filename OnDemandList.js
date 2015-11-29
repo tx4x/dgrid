@@ -198,6 +198,7 @@ define([
 								className: 'dgrid-no-data',
 								innerHTML: self.noDataMessage
 							});
+							self._emit('noData');
 							parentNode.insertBefore(noDataNode, self._getFirstRowSibling(parentNode));
 						}
 						var height = 0;

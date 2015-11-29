@@ -214,6 +214,7 @@ define([
 					className: 'dgrid-no-data',
 					innerHTML: this.noDataMessage
 				}, this.contentNode);
+				this._emit('noData');
 			}
 
 			return result;
@@ -401,6 +402,7 @@ define([
 					className: 'dgrid-no-data',
 					innerHTML: this.noDataMessage
 				}, this.contentNode);
+				this._emit('noData');
 			}
 
 			var rows = (options && options.rows) || this._rows;
