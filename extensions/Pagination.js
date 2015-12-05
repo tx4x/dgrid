@@ -11,10 +11,11 @@ define([
 	'dojo/has',
 	'dojo/when',
 	'../util/misc',
-	'dojo/i18n!./nls/pagination',
 	'dojo/_base/sniff'
 ], function (_StoreMixin, declare, arrayUtil, lang, domConstruct, domClass, on, query, string, has, when,
-		miscUtil, i18n) {
+		miscUtil) {
+
+
 	function cleanupContent(grid) {
 		// Remove any currently-rendered rows, or noDataMessage
 		if (grid.noDataNode) {
@@ -78,7 +79,16 @@ define([
 		// i18nPagination: Object
 		//		This object contains all of the internationalized strings as
 		//		key/value pairs.
-		i18nPagination: i18n,
+		i18nPagination: {
+			status: '${start} - ${end} of ${total} results',
+			gotoFirst: 'Go to first page',
+			gotoNext: 'Go to next page',
+			gotoPrev: 'Go to previous page',
+			gotoLast: 'Go to last page',
+			gotoPage: 'Go to page',
+			jumpPage: 'Jump to page',
+			rowsPerPage: 'Number of rows per page'
+		},
 
 		showFooter: true,
 		_currentPage: 1,
