@@ -6,6 +6,7 @@ This will save time for everyone._
 
 ## Understanding the Basics
 
+
 If you don't understand what a *pull request* is, or how to submit one, please refer to the
 [documentation][github-docs] provided by GitHub.
 
