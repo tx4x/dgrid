@@ -1,6 +1,7 @@
 define([
 	'dojo/_base/declare',
 	'dojo/_base/lang',
+	'dojo/dom-class',
 	'dojo/dom-construct',
 	'dojo/on',
 	'dojo/aspect',
@@ -8,7 +9,7 @@ define([
 	'dojo/has',
 	'./util/misc',
 	'dojo/_base/sniff'
-], function (declare, lang, domConstruct, on, aspect, query, has, miscUtil) {
+], function (declare, lang, domClass, domConstruct, on, aspect, query, has, miscUtil) {
 	has.add('event-mousewheel', function (global, document, element) {
 		return 'onmousewheel' in element;
 	});
@@ -18,18 +19,13 @@ define([
 
 	var colsetidAttr = 'data-dgrid-column-set-id';
 
-	function adjustScrollLeft(grid, row) {
+	function adjustScrollLeft(grid, root) {
+		// Adjusts the scroll position of each column set in each row under the given root.
+		// (root can be a row, or e.g. a tree parent row element's connected property to adjust children)
 		var scrollLefts = grid._columnSetScrollLefts;
-		query('.dgrid-column-set', row).forEach(function (element) {
+		query('.dgrid-column-set', root).forEach(function (element) {
 			element.scrollLeft = scrollLefts[element.getAttribute(colsetidAttr)];
 		});
-	}
-
-	function scrollColumnSetTo(grid, columnSetNode, offsetLeft) {
-		var id = columnSetNode.getAttribute(colsetidAttr);
-		var scroller = grid._columnSetScrollers[id];
-
-		scroller.scrollLeft = offsetLeft < 0 ? 0 : offsetLeft;
 	}
 
 	function getColumnSetSubRows(subRows, columnSetId) {
@@ -56,6 +52,13 @@ define([
 		return subset;
 	}
 
+	function isRootNode(node, rootNode) {
+		// If we've reached the top-level node for the grid then there is no parent column set.
+		// This guard prevents an error when scroll is initated over some node in the grid that is not a descendant of
+		// a column set. This can happen in a grid that has empty space below its rows (grid is taller than the rows).
+		return (rootNode && node === rootNode) || domClass.contains(node, 'dgrid');
+	}
+
 	function findParentColumnSet(node, root) {
 		// WebKit will invoke mousewheel handlers with an event target of a text
 		// node; check target and if it's not an element node, start one node higher
@@ -63,9 +66,14 @@ define([
 		if (node.nodeType !== 1) {
 			node = node.parentNode;
 		}
+
 		while (node && !query.matches(node, '.dgrid-column-set[' + colsetidAttr + ']', root)) {
+			if (isRootNode(node, root)) {
+				return null;
+			}
 			node = node.parentNode;
 		}
+
 		return node;
 	}
 
@@ -189,6 +197,20 @@ define([
 			this.on('.dgrid-column-set:dgrid-cellfocusin', function (event) {
 				self._onColumnSetCellFocus(event, this);
 			});
+
+			if (typeof this.expand === 'function') {
+				aspect.after(this, 'expand', function (promise, args) {
+					promise.then(function () {
+						var row = self.row(args[0]);
+						if (self._expanded[row.id]) {
+							// scrollLeft changes can't take effect on collapsed child rows;
+							// ensure they are properly updated once re-expanded.
+							adjustScrollLeft(self, row.element.connected);
+						}
+					});
+					return promise;
+				});
+			}
 		},
 
 		columnSets: [],

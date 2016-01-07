@@ -6,8 +6,9 @@ define([
 	'dojo/dom-construct',
 	'dojo/has',
 	'dojo/on',
-	'dojo/when'
-], function (declare, lang, Deferred, aspect, domConstruct, has, on, when) {
+	'dojo/when',
+	'./Grid'
+], function (declare, lang, Deferred, aspect, domConstruct, has, on, when, Grid) {
 	// This module isolates the base logic required by store-aware list/grid
 	// components, e.g. OnDemandList/Grid and the Pagination extension.
 
@@ -121,30 +122,32 @@ define([
 				});
 			}
 
-			if (collection) {
-				var renderedCollection = collection;
-				if (this.sort && this.sort.length > 0) {
-					renderedCollection = collection.sort(this.sort);
-				}
-
-				if (renderedCollection.track && this.shouldTrackCollection) {
-					renderedCollection = renderedCollection.track();
-					this._rows = [];
-
-					this._observerHandle = this._observeCollection(
-						renderedCollection,
-						this.contentNode,
-						{ rows: this._rows }
-					);
-				}
-
-				this._renderedCollection = renderedCollection;
-			}
-
 			this.collection = collection;
 
-			// Avoid unnecessary refresh if instance hasn't started yet (startup will refresh)
+			// Avoid unnecessary rendering and processing before the grid has started up
 			if (this._started) {
+				// Once startup is called, List.startup sets the sort property which calls _StoreMixin._applySort
+				// which sets the collection property again.  So _StoreMixin._applySort will be executed again
+				// after startup is called.
+				if (collection) {
+					var renderedCollection = collection;
+					if (this.sort && this.sort.length > 0) {
+						renderedCollection = collection.sort(this.sort);
+					}
+
+					if (renderedCollection.track && this.shouldTrackCollection) {
+						renderedCollection = renderedCollection.track();
+						this._rows = [];
+
+						this._observerHandle = this._observeCollection(
+							renderedCollection,
+							this.contentNode,
+							{ rows: this._rows }
+						);
+					}
+
+					this._renderedCollection = renderedCollection;
+				}
 				this.refresh();
 			}
 		},
@@ -220,6 +223,30 @@ define([
 			return result;
 		},
 
+		refreshCell: function (cell) {
+			var row = cell.row;
+			var self = this;
+
+			if (!this.collection || !this._createBodyRowCell) {
+				throw new Error('refreshCell requires a Grid with a collection.');
+			}
+
+			return this.collection.get(row.id).then(function (item) {
+				var cellElement = cell.element;
+				if (cellElement.widget) {
+					cellElement.widget.destroyRecursive();
+				}
+				domConstruct.empty(cellElement);
+
+				var dirtyItem = self.dirty && self.dirty[row.id];
+				if (dirtyItem) {
+					item = lang.delegate(item, dirtyItem);
+				}
+
+				self._createBodyRowCell(cellElement, cell.column, item);
+			});
+		},
+
 		renderArray: function () {
 			var rows = this.inherited(arguments);
 
@@ -281,7 +308,8 @@ define([
 			var self = this,
 				store = this.collection,
 				dirty = this.dirty,
-				dfd = new Deferred(), promise = dfd.promise,
+				dfd = new Deferred(),
+				results = {},
 				getFunc = function (id) {
 					// returns a function to pass as a step in the promise chain,
 					// with the id variable closured
@@ -325,13 +353,20 @@ define([
 
 					updating[id] = true;
 					// Put it in the store, returning the result/promise
-					return store.put(object).then(function () {
+					return store.put(object).then(function (result) {
 						// Clear the item now that it's been confirmed updated
 						delete dirty[id];
 						delete updating[id];
+						results[id] = result;
+						return results;
 					});
 				};
 			}
+
+			var promise = dfd.then(function () {
+				// Ensure empty object is returned even if nothing was dirty, for consistency
+				return results;
+			});
 
 			// For every dirty item, grab the ID
 			for (var id in dirty) {
@@ -444,14 +479,6 @@ define([
 
 			var handles = [
 				collection.on('delete, update', function (event) {
-/*
-                    console.log('update ',self.id);
-                    var _a = self;
-                    var _rows = rows;
-                    if(self.id==='xcf_views_DriverTreeView_0'){
-                        console.log('driver!');
-                    }*/
-
 					var from = event.previousIndex;
 					var to = event.index;
 
@@ -476,11 +503,6 @@ define([
 							// adjust the rowIndex so adjustRowIndices has the right starting point
 							rows[from] && rows[from].rowIndex--;
 						}
-
-						// the removal of rows could cause us to need to page in more items
-						if (self._processScroll) {
-							self._processScroll();
-						}
 					}
 					if (event.type === 'delete') {
 						// Reset row in case this is later followed by an add;
@@ -490,8 +512,7 @@ define([
 				}),
 
 				collection.on('add, update', function (event) {
-
-                    var from = event.previousIndex;
+					var from = event.previousIndex;
 					var to = event.index;
 					var nextNode;
 
@@ -540,19 +561,15 @@ define([
 				}),
 
 				collection.on('add, delete, update', function (event) {
-                    /*
-                    console.log('update 3',self.id);
-                    var _a = self;
-                    var _rows = rows;
-                    if(self.id==='xcf_views_DriverTreeView_0'){
-                        console.log('driver 3!');
-                    }
-                    */
-
 					var from = (typeof event.previousIndex !== 'undefined') ? event.previousIndex : Infinity,
 						to = (typeof event.index !== 'undefined') ? event.index : Infinity,
 						adjustAtIndex = Math.min(from, to);
 					from !== to && rows[adjustAtIndex] && self.adjustRowIndices(rows[adjustAtIndex]);
+
+					// the removal of rows could cause us to need to page in more items
+					if (from !== Infinity && self._processScroll && (rows[from] || rows[from - 1])) {
+						self._processScroll();
+					}
 
 					// Fire _onNotification, even for out-of-viewport notifications,
 					// since some things may still need to update (e.g. Pagination's status/navigation)

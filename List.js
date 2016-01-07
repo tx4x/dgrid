@@ -62,10 +62,11 @@ define([
 		element.appendChild(div);
 		document.body.appendChild(element);
 
-		// position: absolute makes IE always report child's offsetLeft as 0,
-		// but it conveniently makes other browsers reset to 0 as base, and all
-		// versions of IE are known to move the scrollbar to the left side for rtl
-		isLeft = !!has('ie') || !!has('trident') || div.offsetLeft >= has('dom-scrollbar-width');
+		// position: absolute makes modern IE and Edge always report child's offsetLeft as 0,
+		// but other browsers factor in the position of the scrollbar if it is to the left.
+		// All versions of IE and Edge are known to move the scrollbar to the left side for rtl.
+		isLeft = !!has('ie') || !!has('trident') || /\bEdge\//.test(navigator.userAgent) ||
+			div.offsetLeft >= has('dom-scrollbar-width');
 		cleanupTestElement(element);
 		domConstruct.destroy(div);
 		element.removeAttribute('dir');
@@ -193,8 +194,7 @@ define([
 			}
 		},
 		buildRendering: function () {
-
-            var domNode = this.domNode,
+			var domNode = this.domNode,
 				addUiClasses = this.addUiClasses,
 				self = this,
 				headerNode,
@@ -212,11 +212,11 @@ define([
 
 			domNode.setAttribute('role', 'grid');
 			domClass.add(domNode, 'dgrid dgrid-' + this.listType +
-				(addUiClasses ? ' ui-widget' : ''));
+				(addUiClasses ? ' ui-widget' : ''))
 
 			// Place header node (initially hidden if showHeader is false).
 			headerNode = this.headerNode = domConstruct.create('div', {
-				className: 'dgrid-header dgrid-header-row widget' + (addUiClasses ? ' widget' : '') +
+				className: 'dgrid-header dgrid-header-row' + (addUiClasses ? ' ui-widget-header' : '') +
 					(this.showHeader ? '' : ' dgrid-header-hidden')
 			}, domNode);
 
@@ -230,7 +230,6 @@ define([
 			if (has('ff')) {
 				bodyNode.tabIndex = -1;
 			}
-
 
 			this.headerScrollNode = domConstruct.create('div', {
 				className: 'dgrid-header dgrid-header-scroll dgrid-scrollbar-width' +
@@ -488,7 +487,7 @@ define([
 				if (row === beforeNode) {
 					beforeNode = (beforeNode.connected || beforeNode).nextSibling;
 				}
-				this.removeRow(row);
+				this.removeRow(row, false, options);
 			}
 			row = this.renderRow(object, options);
 			row.className = (row.className || '') + ' dgrid-row ' +
