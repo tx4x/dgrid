@@ -54,14 +54,14 @@ define([
 			}
 
 			var grid = this,
-				row = target.element ? target : this.row(target),
-				isExpanded = !!this._expanded[row.id],
-				hasTransitionend = has('transitionend'),
-				promise;
+					row = target.element ? target : this.row(target),
+					isExpanded = !!this._expanded[row.id],
+					hasTransitionend = has('transitionend'),
+					promise;
 
 			target = row.element;
 			target = target.className.indexOf('dgrid-expando-icon') > -1 ? target :
-				querySelector('.dgrid-expando-icon', target)[0];
+					querySelector('.dgrid-expando-icon', target)[0];
 
 			noTransition = noTransition || !this.enableTreeTransitions;
 
@@ -71,24 +71,25 @@ define([
 
 				// update the expando display
 				domClass.replace(target, 'ui-icon-triangle-1-' + (expanded ? 'se' : 'e'),
-					'ui-icon-triangle-1-' + (expanded ? 'e' : 'se'));
+						'ui-icon-triangle-1-' + (expanded ? 'e' : 'se'));
 				domClass.toggle(row.element, 'dgrid-row-expanded', expanded);
 
 				var rowElement = row.element,
-					container = rowElement.connected,
-					containerStyle,
-					scrollHeight,
-					options = {};
+						container = rowElement.connected,
+						containerStyle,
+						scrollHeight,
+						options = {};
 
 				if (!container) {
 					// if the children have not been created, create a container, a preload node and do the
 					// query for the children
 					container = options.container = rowElement.connected =
-						domConstruct.create('div', { className: 'dgrid-tree-container' }, rowElement, 'after');
+							domConstruct.create('div', { className: 'dgrid-tree-container' }, rowElement, 'after');
+
 					var query = function (options) {
 						var childCollection = grid._renderedCollection.getChildren(row.data),
-							results;
-						if (grid.sort && grid.sort.length > 0) {
+								results;
+						if (grid.sort) {
 							childCollection = childCollection.sort(grid.sort);
 						}
 						if (childCollection.track && grid.shouldTrackCollection) {
@@ -129,11 +130,11 @@ define([
 						var firstChild = domConstruct.create('div', null, container);
 						promise = this._trackError(function () {
 							return grid.renderQueryResults(
-								query(options),
-								firstChild,
-								lang.mixin({ rows: options.rows },
-									'level' in query ? { queryLevel: query.level } : null
-								)
+									query(options),
+									firstChild,
+									lang.mixin({ rows: options.rows },
+											'level' in query ? { queryLevel: query.level } : null
+									)
 							).then(function (rows) {
 								domConstruct.destroy(firstChild);
 								return rows;
@@ -141,10 +142,11 @@ define([
 						});
 					}
 
-					if (hasTransitionend) {
-						// Update height whenever a collapse/expand transition ends.
-						// (This handler is only registered when each child container is first created.)
-						on(container, hasTransitionend, this._onTreeTransitionEnd);
+					if (hasTransitionend && !noTransition) {
+						on.once(container, hasTransitionend, this._onTreeTransitionEnd);
+					}
+					else {
+						this._onTreeTransitionEnd.call(container);
 					}
 				}
 
@@ -174,7 +176,7 @@ define([
 					setTimeout(function () {
 						domClass.remove(container, 'dgrid-tree-resetting');
 						containerStyle.height =
-							expanded ? (scrollHeight ? scrollHeight + 'px' : 'auto') : '0px';
+								expanded ? (scrollHeight ? scrollHeight + 'px' : 'auto') : '0px';
 					}, 0);
 				}
 
@@ -207,19 +209,15 @@ define([
 			return columnArray;
 		},
 
-		insertRow: function (object) {
+		insertRow: function () {
 			var rowElement = this.inherited(arguments);
 
 			// Auto-expand (shouldExpand) considerations
 			var row = this.row(rowElement),
-				expanded = this.shouldExpand(row, this._currentLevel, this._expanded[row.id]);
+					expanded = this.shouldExpand(row, this._currentLevel, this._expanded[row.id]);
 
 			if (expanded) {
 				this.expand(rowElement, true, true);
-			}
-
-			if (expanded || (!this.collection.mayHaveChildren || this.collection.mayHaveChildren(object))) {
-				domClass.add(rowElement, 'dgrid-row-expandable');
 			}
 
 			return rowElement; // pass return value through
@@ -227,7 +225,7 @@ define([
 
 		removeRow: function (rowElement, preserveDom) {
 			var connected = rowElement.connected,
-				childOptions = {};
+					childOptions = {};
 			if (connected) {
 				if (connected._handles) {
 					arrayUtil.forEach(connected._handles, function (handle) {
@@ -288,43 +286,18 @@ define([
 		_configureTreeColumn: function (column) {
 			// summary:
 			//		Adds tree navigation capability to a column.
-			if (column._isConfiguredTreeColumn) {
-				return;
-			}
 
-			var originalRenderCell = column.renderCell || this._defaultRenderCell;
-			column._isConfiguredTreeColumn = true;
-			column.renderCell = function (object, value, td, options) {
-				// summary:
-				//		Renders a cell that can be expanded, creating more rows
-
-				var grid = column.grid,
-					level = Number(options && options.queryLevel) + 1,
-					mayHaveChildren = !grid.collection.mayHaveChildren || grid.collection.mayHaveChildren(object),
-					expando, node;
-
-				level = grid._currentLevel = isNaN(level) ? 0 : level;
-				expando = column.renderExpando(level, mayHaveChildren,
-					grid._expanded[grid.collection.getIdentity(object)], object);
-				expando.level = level;
-				expando.mayHaveChildren = mayHaveChildren;
-
-				node = originalRenderCell.call(column, object, value, td, options);
-				if (node && node.nodeType) {
-					td.appendChild(expando);
-					td.appendChild(node);
-				}
-				else {
-					td.insertBefore(expando, td.firstChild);
-				}
-			};
-
+			//var originalRenderCell = column.renderCell || this._defaultRenderCell;
 			var clicked; // tracks row that was clicked (for expand dblclick event handling)
 
 			this._treeColumn = column;
 
 			var grid = this,
-				colSelector = '.dgrid-content .dgrid-column-' + column.id;
+					colSelector = '.dgrid-content .dgrid-column-' + column.id;
+
+			if (!grid.collection) {
+				throw new Error('dgrid Tree mixin requires a collection to operate.');
+			}
 
 			if (typeof column.renderExpando !== 'function') {
 				column.renderExpando = this._defaultRenderExpando;
@@ -333,39 +306,92 @@ define([
 			// Set up the event listener once and use event delegation for better memory use.
 			this._treeColumnListeners.push(this.on(column.expandOn ||
 					'.dgrid-expando-icon:click,' + colSelector + ':dblclick,' + colSelector + ':keydown',
-				function (event) {
-					var row = grid.row(event);
-					if ((!grid.collection.mayHaveChildren || grid.collection.mayHaveChildren(row.data)) &&
-						(event.type !== 'keydown' || event.keyCode === 32) && !(event.type === 'dblclick' &&
-							clicked && clicked.count > 1 && row.id === clicked.id &&
-							event.target.className.indexOf('dgrid-expando-icon') > -1)) {
-						grid.expand(row);
-					}
+					function (event) {
+						var row = grid.row(event);
+						if ((!grid.collection.mayHaveChildren || grid.collection.mayHaveChildren(row.data)) &&
+								(event.type !== 'keydown' || event.keyCode === 32) && !(event.type === 'dblclick' &&
+								clicked && clicked.count > 1 && row.id === clicked.id &&
+								event.target.className.indexOf('dgrid-expando-icon') > -1)) {
+							grid.expand(row);
+						}
 
-					// If the expando icon was clicked, update clicked object to prevent
-					// potential over-triggering on dblclick (all tested browsers but IE < 9).
-					if (event.target.className.indexOf('dgrid-expando-icon') > -1) {
-						if (clicked && clicked.id === grid.row(event).id) {
-							clicked.count++;
+						// If the expando icon was clicked, update clicked object to prevent
+						// potential over-triggering on dblclick (all tested browsers but IE < 9).
+						if (event.target.className.indexOf('dgrid-expando-icon') > -1) {
+							if (clicked && clicked.id === grid.row(event).id) {
+								clicked.count++;
+							}
+							else {
+								clicked = {
+									id: grid.row(event).id,
+									count: 1
+								};
+							}
 						}
-						else {
-							clicked = {
-								id: grid.row(event).id,
-								count: 1
-							};
-						}
-					}
-				})
+					})
 			);
 
 			if (has('touch')) {
 				// Also listen on double-taps of the cell.
 				this._treeColumnListeners.push(this.on(touchUtil.selector(colSelector, touchUtil.dbltap),
-					function () {
-						grid.expand(this);
-					}));
+						function () {
+							grid.expand(this);
+						}));
 			}
 
+			/*
+			 column.renderCell = function (object, value, td, options) {
+			 // summary:
+			 //		Renders a cell that can be expanded, creating more rows
+
+			 var grid = column.grid,
+			 level = Number(options && options.queryLevel) + 1,
+			 mayHaveChildren = !grid.collection.mayHaveChildren || grid.collection.mayHaveChildren(object),
+			 expando, node;
+
+			 level = grid._currentLevel = isNaN(level) ? 0 : level;
+			 expando = column.renderExpando(level, mayHaveChildren,
+			 grid._expanded[grid.collection.getIdentity(object)], object);
+			 expando.level = level;
+			 expando.mayHaveChildren = mayHaveChildren;
+
+			 node = originalRenderCell.call(column, object, value, td, options);
+			 if (node && node.nodeType) {
+			 td.appendChild(expando);
+			 td.appendChild(node);
+			 }
+			 else {
+			 td.insertBefore(expando, td.firstChild);
+			 }
+			 };
+			 */
+			if (!column.originalRenderCell)
+			{
+				column.originalRenderCell = column.renderCell || this._defaultRenderCell;
+				column.renderCell = function (object, value, td, options) {
+					// summary:
+					//              Renders a cell that can be expanded, creating more rows
+					var grid = column.grid,
+							level = Number(options && options.queryLevel) + 1,
+							mayHaveChildren = !grid.collection.mayHaveChildren || grid.collection.mayHaveChildren(object),
+							expando,
+							node;
+
+					level = grid._currentLevel = isNaN(level) ? 0 : level;
+					expando = column.renderExpando(level, mayHaveChildren,
+							grid._expanded[grid.collection.getIdentity(object)], object);
+					expando.level = level;
+					expando.mayHaveChildren = mayHaveChildren;
+					node = column.originalRenderCell(object, value, td, options);
+					if (node && node.nodeType) {
+						td.appendChild(expando);
+						td.appendChild(node);
+					}
+					else {
+						td.insertBefore(expando, td.firstChild);
+					}
+				};
+			}
 		},
 
 		_defaultRenderExpando: function (level, hasChildren, expanded) {
@@ -383,7 +409,7 @@ define([
 			//		The item that this expando pertains to
 
 			var dir = this.grid.isRTL ? 'right' : 'left',
-				cls = 'dgrid-expando-icon';
+					cls = 'dgrid-expando-icon';
 			if (hasChildren) {
 				cls += ' ui-icon ui-icon-triangle-1-' + (expanded ? 'se' : 'e');
 			}
@@ -394,16 +420,9 @@ define([
 			});
 		},
 
-		_onNotification: function (rows, event) {
-			if (event.type === 'delete') {
-				delete this._expanded[event.id];
-			}
-			this.inherited(arguments);
-		},
-
 		_onTreeTransitionEnd: function (event) {
 			var container = this,
-				height = this.style.height;
+					height = this.style.height;
 			if (height) {
 				// After expansion, ensure display is correct;
 				// after collapse, set display to none to improve performance
