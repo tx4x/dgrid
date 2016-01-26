@@ -190,7 +190,7 @@ define([
 			delete this.srcNodeRef;
 			// to preserve "it just works" behavior, call startup if we're visible
 			if (this.domNode.offsetHeight) {
-				this.startup();
+				//this.startup();
 			}
 		},
 		buildRendering: function () {
