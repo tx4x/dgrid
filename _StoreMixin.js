@@ -6,9 +6,8 @@ define([
 	'dojo/dom-construct',
 	'dojo/has',
 	'dojo/on',
-	'dojo/when',
-	'./Grid'
-], function (declare, lang, Deferred, aspect, domConstruct, has, on, when, Grid) {
+	'dojo/when'
+], function (declare, lang, Deferred, aspect, domConstruct, has, on, when) {
 	// This module isolates the base logic required by store-aware list/grid
 	// components, e.g. OnDemandList/Grid and the Pagination extension.
 
@@ -130,12 +129,14 @@ define([
 				// which sets the collection property again.  So _StoreMixin._applySort will be executed again
 				// after startup is called.
 				if (collection) {
+
 					var renderedCollection = collection;
 					if (this.sort && this.sort.length > 0) {
 						renderedCollection = collection.sort(this.sort);
 					}
 
 					if (renderedCollection.track && this.shouldTrackCollection) {
+
 						renderedCollection = renderedCollection.track();
 						this._rows = [];
 
@@ -154,7 +155,7 @@ define([
 
 		_setStore: function () {
 			if (!this.collection) {
-				console.debug('set(\'store\') call detected, but you probably meant set(\'collection\') for 0.4');
+				console.debug('set(\'store\') call detected, but you probably meant set(\'collection\')');
 			}
 		},
 
@@ -182,6 +183,7 @@ define([
 
 			// Remove observer and existing rows so any sub-row observers will be cleaned up
 			if (this._observerHandle) {
+
 				this._observerHandle.remove();
 				this._observerHandle = this._rows = null;
 			}
@@ -224,6 +226,7 @@ define([
 		},
 
 		refreshCell: function (cell) {
+			this.inherited(arguments);
 			var row = cell.row;
 			var self = this;
 

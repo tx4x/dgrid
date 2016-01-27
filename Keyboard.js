@@ -187,16 +187,8 @@ define([
 
 			var self = this,
 				isActive = document.activeElement === this._focusedNode,
-
-					focusedTarget = this[this.cellNavigation ? 'cell' : 'row'](this._focusedNode);
-
-            if(!focusedTarget){
-                console.error('no focus target');
-                return this.inherited(arguments);
-            }
-
-
-				var focusedRow = focusedTarget.row || focusedTarget,
+				focusedTarget = this[this.cellNavigation ? 'cell' : 'row'](this._focusedNode),
+				focusedRow = focusedTarget.row || focusedTarget,
 				sibling;
 			rowElement = rowElement.element || rowElement;
 

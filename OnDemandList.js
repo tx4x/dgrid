@@ -71,7 +71,7 @@ define([
 		// rowHeight: Number
 		//		Average row height, computed in renderQuery during the rendering of
 		//		the first range of data.
-		rowHeight: 22,
+		rowHeight: 0,
 
 		postCreate: function () {
 			this.inherited(arguments);
@@ -170,11 +170,7 @@ define([
 
 				// Render the result set
 				return self.renderQueryResults(results, preloadNode, options).then(function (trs) {
-
-                    //if(results.totalLength && results.totalLength.then) {
-
 					return results.totalLength.then(function (total) {
-
 						var trCount = trs.length,
 							parentNode = preloadNode.parentNode,
 							noDataNode = self.noDataNode;

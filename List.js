@@ -386,7 +386,7 @@ define([
 
 			// make sure all the content has been removed so it can be recreated
 			this.contentNode.innerHTML = '';
-			// Ensure scroll position always resets (especially for TouchScroll).
+			// Ensure scroll position always resets
 			this.scrollTo({ x: 0, y: 0 });
 		},
 
@@ -591,11 +591,6 @@ define([
 			// Start at the element indicated by the provided row or cell object.
 			element = current = item.element;
 			steps = steps || 1;
-
-            //@TODO: weird bug in Thumb-Keyboard-Navigation
-            if(!element){
-                element = current = item.data.row.element;
-            }
 
 			do {
 				// Outer loop: move in the appropriate direction.

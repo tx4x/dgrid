@@ -130,11 +130,11 @@ define([
 						var firstChild = domConstruct.create('div', null, container);
 						promise = this._trackError(function () {
 							return grid.renderQueryResults(
-									query(options),
-									firstChild,
-									lang.mixin({ rows: options.rows },
-											'level' in query ? { queryLevel: query.level } : null
-									)
+								query(options),
+								firstChild,
+								lang.mixin({ rows: options.rows },
+									'level' in query ? { queryLevel: query.level } : null
+								)
 							).then(function (rows) {
 								domConstruct.destroy(firstChild);
 								return rows;
@@ -142,12 +142,12 @@ define([
 						});
 					}
 
-					if (hasTransitionend && !noTransition) {
-						on.once(container, hasTransitionend, this._onTreeTransitionEnd);
+					if (hasTransitionend) {
+						// Update height whenever a collapse/expand transition ends.
+						// (This handler is only registered when each child container is first created.)
+						on(container, hasTransitionend, this._onTreeTransitionEnd);
 					}
-					else {
-						this._onTreeTransitionEnd.call(container);
-					}
+
 				}
 
 				// Show or hide all the children.
@@ -209,15 +209,19 @@ define([
 			return columnArray;
 		},
 
-		insertRow: function () {
+		insertRow: function (object) {
 			var rowElement = this.inherited(arguments);
 
 			// Auto-expand (shouldExpand) considerations
 			var row = this.row(rowElement),
-					expanded = this.shouldExpand(row, this._currentLevel, this._expanded[row.id]);
+				expanded = this.shouldExpand(row, this._currentLevel, this._expanded[row.id]);
 
 			if (expanded) {
 				this.expand(rowElement, true, true);
+			}
+
+			if (expanded || (!this.collection.mayHaveChildren || this.collection.mayHaveChildren(object))) {
+				domClass.add(rowElement, 'dgrid-row-expandable');
 			}
 
 			return rowElement; // pass return value through
@@ -225,7 +229,7 @@ define([
 
 		removeRow: function (rowElement, preserveDom) {
 			var connected = rowElement.connected,
-					childOptions = {};
+				childOptions = {};
 			if (connected) {
 				if (connected._handles) {
 					arrayUtil.forEach(connected._handles, function (handle) {
@@ -266,6 +270,7 @@ define([
 		},
 
 		_destroyColumns: function () {
+			this.inherited(arguments);
 			var listeners = this._treeColumnListeners;
 
 			for (var i = listeners.length; i--;) {
@@ -334,9 +339,9 @@ define([
 			if (has('touch')) {
 				// Also listen on double-taps of the cell.
 				this._treeColumnListeners.push(this.on(touchUtil.selector(colSelector, touchUtil.dbltap),
-						function () {
-							grid.expand(this);
-						}));
+					function () {
+						grid.expand(this);
+					}));
 			}
 
 			/*
@@ -409,7 +414,7 @@ define([
 			//		The item that this expando pertains to
 
 			var dir = this.grid.isRTL ? 'right' : 'left',
-					cls = 'dgrid-expando-icon';
+				cls = 'dgrid-expando-icon';
 			if (hasChildren) {
 				cls += ' ui-icon ui-icon-triangle-1-' + (expanded ? 'se' : 'e');
 			}
@@ -420,9 +425,16 @@ define([
 			});
 		},
 
+		_onNotification: function (rows, event) {
+			if (event.type === 'delete') {
+				delete this._expanded[event.id];
+			}
+			this.inherited(arguments);
+		},
+
 		_onTreeTransitionEnd: function (event) {
 			var container = this,
-					height = this.style.height;
+				height = this.style.height;
 			if (height) {
 				// After expansion, ensure display is correct;
 				// after collapse, set display to none to improve performance
