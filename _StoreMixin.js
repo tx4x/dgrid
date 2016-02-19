@@ -206,7 +206,13 @@ define([
 			// Extend List#row with more appropriate lookup-by-id logic
 			var row = this.inherited(arguments);
 			if (row && row.data && typeof row.id !== 'undefined') {
-				row.id = this.collection.getIdentity(row.data);
+
+				if(this.collection) {
+					row.id = this.collection.getIdentity(row.data);
+				}else{
+					console.error('_StoreMixin:have no collection!');
+				}
+
 			}
 			return row;
 		},
