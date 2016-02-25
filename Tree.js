@@ -20,7 +20,7 @@ define([
 
 		// enableTreeTransitions: Boolean
 		//		Enables/disables all expand/collapse CSS transitions.
-		enableTreeTransitions: true,
+		enableTreeTransitions: false,
 
 		// treeIndentWidth: Number
 		//		Width (in pixels) of each level of indentation.
