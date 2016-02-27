@@ -57,7 +57,7 @@ define([
 
 		// shouldTrackCollection: Boolean
 		//		Whether this instance should track any trackable collection it is passed.
-		shouldTrackCollection: true,
+		shouldTrackCollection: false,
 
 		// getBeforePut: boolean
 		//		If true, a get request will be performed to the store before each put
