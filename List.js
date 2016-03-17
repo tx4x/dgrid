@@ -311,8 +311,8 @@ define([
 				}
 
 				// add rules that can be used where scrollbar width/height is needed
-				miscUtil.addCssRule('.dgrid-scrollbar-width', 'width: ' + scrollbarWidth + 'px');
-				miscUtil.addCssRule('.dgrid-scrollbar-height', 'height: ' + scrollbarHeight + 'px');
+				//miscUtil.addCssRule('.dgrid-scrollbar-width', 'width: ' + scrollbarWidth + 'px');
+				//miscUtil.addCssRule('.dgrid-scrollbar-height', 'height: ' + scrollbarHeight + 'px');
 
 				if (scrollbarWidth !== 17) {
 					// for modern browsers, we can perform a one-time operation which adds
