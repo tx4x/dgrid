@@ -129,14 +129,12 @@ define([
 				// which sets the collection property again.  So _StoreMixin._applySort will be executed again
 				// after startup is called.
 				if (collection) {
-
 					var renderedCollection = collection;
 					if (this.sort && this.sort.length > 0) {
 						renderedCollection = collection.sort(this.sort);
 					}
 
 					if (renderedCollection.track && this.shouldTrackCollection) {
-
 						renderedCollection = renderedCollection.track();
 						this._rows = [];
 
@@ -183,7 +181,6 @@ define([
 
 			// Remove observer and existing rows so any sub-row observers will be cleaned up
 			if (this._observerHandle) {
-
 				this._observerHandle.remove();
 				this._observerHandle = this._rows = null;
 			}
@@ -232,30 +229,54 @@ define([
 		},
 
 		refreshCell: function (cell) {
-			this.inherited(arguments);
-			var row = cell.row;
-			var self = this;
-
+			/*
+			 this.inherited(arguments);
+			 var row = cell.row;
+			 var self = this;
+			 */
 			if (!this.collection || !this._createBodyRowCell) {
 				throw new Error('refreshCell requires a Grid with a collection.');
 			}
 
+			this.inherited(arguments);
+			return this.collection.get(cell.row.id).then(lang.hitch(this, '_refreshCellFromItem', cell));
+
+/*
 			return this.collection.get(row.id).then(function (item) {
+
 				var cellElement = cell.element;
-				if (cellElement.widget) {
-					cellElement.widget.destroyRecursive();
-				}
-				domConstruct.empty(cellElement);
 
-				var dirtyItem = self.dirty && self.dirty[row.id];
-				if (dirtyItem) {
-					item = lang.delegate(item, dirtyItem);
-				}
+				if(cellElement) {
 
-				self._createBodyRowCell(cellElement, cell.column, item);
+					if (cellElement.widget) {
+						cellElement.widget.destroyRecursive();
+					}
+					domConstruct.empty(cellElement);
+
+					var dirtyItem = self.dirty && self.dirty[row.id];
+					if (dirtyItem) {
+						item = lang.delegate(item, dirtyItem);
+					}
+
+					self._createBodyRowCell(cellElement, cell.column, item);
+				}
 			});
+			*/
 		},
+		_refreshCellFromItem: function (cell, item, options) {
+			var cellElement = cell.element;
+			if (cellElement.widget) {
+				cellElement.widget.destroyRecursive();
+			}
+			domConstruct.empty(cellElement);
 
+			var dirtyItem = this.dirty && this.dirty[cell.row.id];
+			if (dirtyItem) {
+				item = lang.delegate(item, dirtyItem);
+			}
+
+			this._createBodyRowCell(cellElement, cell.column, item, options);
+		},
 		renderArray: function () {
 			var rows = this.inherited(arguments);
 

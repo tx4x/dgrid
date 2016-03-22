@@ -54,14 +54,14 @@ define([
 			}
 
 			var grid = this,
-					row = target.element ? target : this.row(target),
-					isExpanded = !!this._expanded[row.id],
-					hasTransitionend = has('transitionend'),
-					promise;
+				row = target.element ? target : this.row(target),
+				isExpanded = !!this._expanded[row.id],
+				hasTransitionend = has('transitionend'),
+				promise;
 
 			target = row.element;
 			target = target.className.indexOf('dgrid-expando-icon') > -1 ? target :
-					querySelector('.dgrid-expando-icon', target)[0];
+				querySelector('.dgrid-expando-icon', target)[0];
 
 			noTransition = noTransition || !this.enableTreeTransitions;
 
@@ -71,21 +71,20 @@ define([
 
 				// update the expando display
 				domClass.replace(target, 'ui-icon-triangle-1-' + (expanded ? 'se' : 'e'),
-						'ui-icon-triangle-1-' + (expanded ? 'e' : 'se'));
+					'ui-icon-triangle-1-' + (expanded ? 'e' : 'se'));
 				domClass.toggle(row.element, 'dgrid-row-expanded', expanded);
 
 				var rowElement = row.element,
-						container = rowElement.connected,
-						containerStyle,
-						scrollHeight,
-						options = {};
+					container = rowElement.connected,
+					containerStyle,
+					scrollHeight,
+					options = {};
 
 				if (!container) {
 					// if the children have not been created, create a container, a preload node and do the
 					// query for the children
 					container = options.container = rowElement.connected =
-							domConstruct.create('div', { className: 'dgrid-tree-container' }, rowElement, 'after');
-
+						domConstruct.create('div', { className: 'dgrid-tree-container' }, rowElement, 'after');
 					var query = function (options) {
 						var childCollection = grid._renderedCollection.getChildren(row.data),
 								results;
@@ -147,7 +146,6 @@ define([
 						// (This handler is only registered when each child container is first created.)
 						on(container, hasTransitionend, this._onTreeTransitionEnd);
 					}
-
 				}
 
 				// Show or hide all the children.
@@ -176,7 +174,7 @@ define([
 					setTimeout(function () {
 						domClass.remove(container, 'dgrid-tree-resetting');
 						containerStyle.height =
-								expanded ? (scrollHeight ? scrollHeight + 'px' : 'auto') : '0px';
+							expanded ? (scrollHeight ? scrollHeight + 'px' : 'auto') : '0px';
 					}, 0);
 				}
 
@@ -259,6 +257,16 @@ define([
 			this.inherited(arguments);
 		},
 
+		_refreshCellFromItem: function (cell, item) {
+			if (!cell.column.renderExpando) {
+				return this.inherited(arguments);
+			}
+
+			this.inherited(arguments, [ cell, item, {
+				queryLevel: querySelector('.dgrid-expando-icon', cell.element)[0].level - 1
+			}]);
+		},
+
 		cleanup: function () {
 			this.inherited(arguments);
 
@@ -292,56 +300,87 @@ define([
 			// summary:
 			//		Adds tree navigation capability to a column.
 
-			//var originalRenderCell = column.renderCell || this._defaultRenderCell;
+			var grid = this;
+			var collection = this.collection;
+			var colSelector = '.dgrid-content .dgrid-column-' + column.id;
 			var clicked; // tracks row that was clicked (for expand dblclick event handling)
 
 			this._treeColumn = column;
+			if (!column._isConfiguredTreeColumn) {
+				var originalRenderCell = column.renderCell || this._defaultRenderCell;
+				column._isConfiguredTreeColumn = true;
+				column.renderCell = function (object, value, td, options) {
+					// summary:
+					//		Renders a cell that can be expanded, creating more rows
 
-			var grid = this,
-					colSelector = '.dgrid-content .dgrid-column-' + column.id;
+					if(!collection){
+						return;
+					}
 
-			if (!grid.collection) {
-				throw new Error('dgrid Tree mixin requires a collection to operate.');
+					var level = Number(options && options.queryLevel) + 1,
+							mayHaveChildren = !collection.mayHaveChildren || collection.mayHaveChildren(object),
+							expando, node;
+
+					level = grid._currentLevel = isNaN(level) ? 0 : level;
+
+					expando = column.renderExpando(level, mayHaveChildren,
+							grid._expanded[collection.getIdentity(object)], object);
+
+					expando.level = level;
+					expando.mayHaveChildren = mayHaveChildren;
+
+					node = originalRenderCell.call(column, object, value, td, options);
+					if (node && node.nodeType) {
+						td.appendChild(expando);
+						td.appendChild(node);
+					}
+					else {
+						td.insertBefore(expando, td.firstChild);
+					}
+				};
+
+				if (typeof column.renderExpando !== 'function') {
+					column.renderExpando = this._defaultRenderExpando;
+				}
 			}
 
-			if (typeof column.renderExpando !== 'function') {
-				column.renderExpando = this._defaultRenderExpando;
-			}
-
-			// Set up the event listener once and use event delegation for better memory use.
-			this._treeColumnListeners.push(this.on(column.expandOn ||
-					'.dgrid-expando-icon:click,' + colSelector + ':dblclick,' + colSelector + ':keydown',
-					function (event) {
-						var row = grid.row(event);
-						if ((!grid.collection.mayHaveChildren || grid.collection.mayHaveChildren(row.data)) &&
-								(event.type !== 'keydown' || event.keyCode === 32) && !(event.type === 'dblclick' &&
-								clicked && clicked.count > 1 && row.id === clicked.id &&
-								event.target.className.indexOf('dgrid-expando-icon') > -1)) {
-							grid.expand(row);
-						}
-
-						// If the expando icon was clicked, update clicked object to prevent
-						// potential over-triggering on dblclick (all tested browsers but IE < 9).
-						if (event.target.className.indexOf('dgrid-expando-icon') > -1) {
-							if (clicked && clicked.id === grid.row(event).id) {
-								clicked.count++;
+			var treeColumnListeners = this._treeColumnListeners;
+			if (treeColumnListeners.length === 0) {
+				// Set up the event listener once and use event delegation for better memory use.
+				treeColumnListeners.push(this.on(column.expandOn ||
+						'.dgrid-expando-icon:click,' + colSelector + ':dblclick,' + colSelector + ':keydown',
+						function (event) {
+							var row = grid.row(event);
+							if ((!grid.collection.mayHaveChildren || grid.collection.mayHaveChildren(row.data)) &&
+									(event.type !== 'keydown' || event.keyCode === 32) && !(event.type === 'dblclick' &&
+									clicked && clicked.count > 1 && row.id === clicked.id &&
+									event.target.className.indexOf('dgrid-expando-icon') > -1)) {
+								grid.expand(row);
 							}
-							else {
-								clicked = {
-									id: grid.row(event).id,
-									count: 1
-								};
-							}
-						}
-					})
-			);
 
-			if (has('touch')) {
-				// Also listen on double-taps of the cell.
-				this._treeColumnListeners.push(this.on(touchUtil.selector(colSelector, touchUtil.dbltap),
-					function () {
-						grid.expand(this);
-					}));
+							// If the expando icon was clicked, update clicked object to prevent
+							// potential over-triggering on dblclick (all tested browsers but IE < 9).
+							if (event.target.className.indexOf('dgrid-expando-icon') > -1) {
+								if (clicked && clicked.id === grid.row(event).id) {
+									clicked.count++;
+								}
+								else {
+									clicked = {
+										id: grid.row(event).id,
+										count: 1
+									};
+								}
+							}
+						})
+				);
+
+				if (has('touch')) {
+					// Also listen on double-taps of the cell.
+					treeColumnListeners.push(this.on(touchUtil.selector(colSelector, touchUtil.dbltap),
+							function () {
+								grid.expand(this);
+							}));
+				}
 			}
 
 			/*
@@ -369,7 +408,7 @@ define([
 			 td.insertBefore(expando, td.firstChild);
 			 }
 			 };
-			 */
+			 *//*
 			if (!column.originalRenderCell)
 			{
 				column.originalRenderCell = column.renderCell || this._defaultRenderCell;
@@ -397,6 +436,7 @@ define([
 					}
 				};
 			}
+			*/
 		},
 
 		_defaultRenderExpando: function (level, hasChildren, expanded) {
