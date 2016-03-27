@@ -264,6 +264,9 @@ define([
 			*/
 		},
 		_refreshCellFromItem: function (cell, item, options) {
+			if(!cell || !cell.element){
+				return;
+			}
 			var cellElement = cell.element;
 			if (cellElement.widget) {
 				cellElement.widget.destroyRecursive();
