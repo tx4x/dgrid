@@ -331,6 +331,9 @@ define([
 		resize: function () {
 			// extension of List.resize to allow accounting for
 			// column sizes larger than actual grid area
+			if(!this.headerNode){
+				return;
+			}
 			var headerTableNode = this.headerNode.firstChild,
 				contentNode = this.contentNode,
 				width;
