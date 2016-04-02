@@ -212,10 +212,11 @@ define([
 
 			domNode.setAttribute('role', 'grid');
 			domClass.add(domNode, 'dgrid dgrid-' + this.listType +
-				(addUiClasses ? ' ui-widget' : ''))
+				(addUiClasses ? ' ui-widget' : ''));
 
 			// Place header node (initially hidden if showHeader is false).
 			headerNode = this.headerNode = domConstruct.create('div', {
+				tabIndex:-1,
 				className: 'dgrid-header dgrid-header-row' + (addUiClasses ? ' ui-widget-header' : '') +
 					(this.showHeader ? '' : ' dgrid-header-hidden')
 			}, domNode);
