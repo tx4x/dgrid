@@ -224,7 +224,7 @@ define([
 				}, this.contentNode);
 				this._emit('noData');
 			}
-
+			//{"values":[{"key":"Marantz-Power","value":"%%PowerState%%"}]}
 			return result;
 		},
 
@@ -235,7 +235,8 @@ define([
 			 var self = this;
 			 */
 			if (!this.collection || !this._createBodyRowCell) {
-				throw new Error('refreshCell requires a Grid with a collection.');
+				//throw new Error('refreshCell requires a Grid with a collection.');
+				return false;
 			}
 
 			if (cell.column.selector) {
