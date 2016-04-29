@@ -270,7 +270,8 @@ define([
 				value = ctrlKey ? null : true;
 				lastRow = null;
 			}
-			this.select(target, lastRow, value);
+
+			this.select(target, lastRow, value,null,event.type.indexOf('mouse')!==-1 ? 'mouse' : event.type);
 
 			if (!lastRow) {
 				// Update reference for potential subsequent shift+select
@@ -378,13 +379,13 @@ define([
 			var self = this,
 				signals;
 
-			function ifSelected(rowArg, methodName) {
+			function ifSelected(rowArg, methodName,why) {
 				// Calls a method if the row corresponding to the object is selected.
 				var row = self.row(rowArg),
 					selection = row && self.selection[row.id];
 				// Is the row currently in the selection list.
 				if (selection) {
-					self[methodName](row);
+					self[methodName](row,null,true,null,why);
 				}
 			}
 
@@ -413,7 +414,7 @@ define([
 									// When List updates an item, the row element is removed and a new one inserted.
 									// If at this point the object is still in grid.selection,
 									// then call select on the row so the element's CSS is updated.
-									ifSelected(collection.getIdentity(event.target), 'select');
+									ifSelected(collection.getIdentity(event.target), 'select','update');
 								}
 							})
 						);
@@ -683,7 +684,7 @@ define([
 				row = this.row(rows[i]);
 				selected = row.id in selection ? selection[row.id] : this.allSelected;
 				if (selected) {
-					this.select(row, null, selected);
+					this.select(row, null, selected,null,'renderArray');
 				}
 			}
 			this._fireSelectionEvents();
