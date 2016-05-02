@@ -1,5 +1,4 @@
 define([
-    "dojo/_base/kernel",
     "dgrid/Tree",
     "dgrid/Selection",
     "dgrid/OnDemandList",
@@ -9,11 +8,13 @@ define([
     "dgrid/extensions/CompoundColumns",
     "dgrid/extensions/Pagination",
     "dgrid/extensions/DnD",
+    "dgrid/Editor",
     "dstore/Store",
     "dstore/Memory",
     "dstore/Tree",
     "dstore/Cache",
-    "dstore/Trackable"
+    "dstore/Trackable",
+    "dstore/legacy/DstoreAdapter"
 ], function(){
-    return dojo.dgrid;
+
 });
