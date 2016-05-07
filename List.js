@@ -549,7 +549,6 @@ define([
 			}
 
 			if(!target){
-				console.error('target is null!',target);
 				return null;
 			}
 			if (target.target && target.target.nodeType) {
