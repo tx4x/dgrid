@@ -239,7 +239,10 @@ define([
 				return false;
 			}
 
-			if (cell.column.selector) {
+			if(!cell.column){
+				return;
+			}
+			if (cell.column && cell.column.selector) {
 				return (new Deferred()).resolve();
 			}
 			this.inherited(arguments);
