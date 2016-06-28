@@ -177,6 +177,7 @@ define([
 				remove: function () {
 					removeRule(index);
 				}
+				
 			};
 		},
 
