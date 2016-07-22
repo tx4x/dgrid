@@ -1,3 +1,4 @@
+/** @module dgrid/List **/
 define([
 	'dojo/_base/declare',
 	'dojo/dom-construct',
@@ -99,6 +100,10 @@ define([
 		}
 	};
 
+	/**
+	 * Grid base class
+	 * @class module:dgrid/List
+	 */
 	var List = declare(null, {
 		tabableHeader: false,
 
@@ -491,9 +496,7 @@ define([
 				this.removeRow(row, false, options);
 			}
 			row = this.renderRow(object, options);
-			row.className = (row.className || '') + ' dgrid-row ' +
-				(i % 2 === 1 ? oddClass : evenClass) +
-				(this.addUiClasses ? ' ui-state-default' : '');
+			row.className = (row.className || '') + ' dgrid-row ' + (i % 2 === 1 ? oddClass : evenClass);
 			// Get the row id for easy retrieval
 			this._rowIdToObject[row.id = id] = object;
 			parent.insertBefore(row, beforeNode || null);
