@@ -218,10 +218,12 @@ define([
 			var result = this.inherited(arguments);
 
 			if (!this.collection) {
+				
 				this.noDataNode = domConstruct.create('div', {
 					className: 'dgrid-no-data',
 					innerHTML: this.noDataMessage
 				}, this.contentNode);
+				
 				this._emit('noData');
 			}
 			//{"values":[{"key":"Marantz-Power","value":"%%PowerState%%"}]}
