@@ -2,17 +2,16 @@ define([
 	'dojo/_base/declare',
 	'dojo/_base/lang',
 	'dojo/_base/array',
-	'dojo/aspect',
 	'dojo/dom-construct',
 	'dojo/dom-class',
 	'dojo/on',
-	'dojo/query',
+	//'dojo/query',
 	'dojo/when',
 	'./util/has-css3',
-	'./Grid',
-	'dojo/has!touch?./util/touch'
-], function (declare, lang, arrayUtil, aspect, domConstruct, domClass, on, querySelector, when, has, Grid, touchUtil) {
+	'dgrid/util/touch'
+], function (declare, lang, arrayUtil, domConstruct, domClass, on, when, has, touchUtil) {
 
+	//querySelector
 	return declare(null, {
 		// collapseOnRefresh: Boolean
 		//		Whether to collapse all expanded nodes any time refresh is called.
@@ -61,7 +60,7 @@ define([
 
 			target = row.element;
 			target = target.className.indexOf('dgrid-expando-icon') > -1 ? target :
-				querySelector('.dgrid-expando-icon', target)[0];
+				$('.dgrid-expando-icon', target)[0];
 
 			noTransition = noTransition || !this.enableTreeTransitions;
 
@@ -240,9 +239,15 @@ define([
 					childOptions.rows = connected._rows;
 				}
 
+				_.each($('>.dgrid-row', connected),function (element) {
+					this.removeRow(element, true, childOptions);
+				}, this);
+
+				/*
 				querySelector('>.dgrid-row', connected).forEach(function (element) {
 					this.removeRow(element, true, childOptions);
 				}, this);
+				*/
 
 				if (connected._rows) {
 					connected._rows.length = 0;
@@ -263,7 +268,7 @@ define([
 			}
 
 			this.inherited(arguments, [ cell, item, {
-				queryLevel: querySelector('.dgrid-expando-icon', cell.element)[0].level - 1
+				queryLevel: $('.dgrid-expando-icon', cell.element)[0].level - 1
 			}]);
 		},
 

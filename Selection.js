@@ -5,10 +5,10 @@ define([
 	'dojo/has',
 	'dojo/aspect',
 	'./List',
-	'dojo/has!touch?./util/touch',
+	'dgrid/util/touch',
 	'dojo/query',
 	'dojo/_base/sniff',
-	'dojo/dom' // for has('css-user-select') in 1.8.2+
+	'dojo/dom'
 ], function (declare, domClass, on, has, aspect, List, touchUtil) {
 
 	has.add('dom-comparedocumentposition', function (global, doc, element) {

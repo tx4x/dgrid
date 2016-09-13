@@ -1,6 +1,6 @@
 define([
-	'dojo/on',
-	'dojo/query'
+	'dojo/on'
+	//'dojo/query'
 ], function (on, query) {
 	// This module exposes useful functions for working with touch devices.
 
@@ -33,6 +33,7 @@ define([
 
 					// there is a selector, so make sure it matches
 					while (!query.matches(eventTarget, selector, target)) {
+						//debugger;
 						if (eventTarget === target || !children || !(eventTarget = eventTarget.parentNode)) {
 							return;
 						}

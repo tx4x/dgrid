@@ -6,7 +6,7 @@ define([
 	'dojo/on',
 	'dojo/query',
 	'dojo/dnd/Source'
-], function (lang, declare, arrayUtil, domClass, on, query, DndSource) {
+], function (lang, declare, arrayUtil, domClass, on, DndSource) {
 	var dndTypeRx = /(\d+)(?:-(\d+))?$/; // used to determine subrow from dndType
 
 	// The following 2 functions are used by onDropInternal logic for
