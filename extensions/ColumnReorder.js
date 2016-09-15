@@ -191,10 +191,9 @@ define([
 			if (this._columnDndSources) {
 				// Destroy old dnd sources.
 				arrayUtil.forEach(this._columnDndSources, function (source) {
-					source && destroy.destroy && source.destroy();
+					source && source.destroy && source.destroy();
 				});
 			}
-
 			this.inherited(arguments);
 		}
 	});
