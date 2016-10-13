@@ -626,6 +626,10 @@ define([
 		},
 
 		up: function (row, steps, visible) {
+			if(!row){
+				console.warn('have now row');
+				return null;
+			}
 			// summary:
 			//		Returns the row that is the given number of steps (1 by default)
 			//		above the row represented by the given object.
@@ -660,6 +664,10 @@ define([
 			//		A row object representing the appropriate row.  If the bottom of the
 			//		list is reached before the given number of steps, the last row will
 			//		be returned.
+			if(!row){
+				console.warn('have now row');
+				return null;
+			}
 			if (!row.element) {
 				row = this.row(row);
 			}
