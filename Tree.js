@@ -3,18 +3,16 @@ define([
 	'dojo/_base/lang',
 	'dojo/_base/array',
 	'dojo/aspect',
-	'dojo/Deferred',
 	'dojo/dom-construct',
 	'dojo/dom-class',
 	'dojo/on',
-	'dojo/promise/all',
 	'dojo/query',
 	'dojo/when',
 	'./util/has-css3',
 	'./Grid',
-	'dgrid/util/touch'
-], function (declare, lang, arrayUtil, aspect, Deferred, domConstruct, domClass, on, all, querySelector, when, has,
-			 Grid, touchUtil) {
+	'dojo/has!touch?./util/touch'
+], function (declare, lang, arrayUtil, aspect, domConstruct, domClass, on, querySelector, when, has, Grid, touchUtil) {
+
 	return declare(null, {
 		// collapseOnRefresh: Boolean
 		//		Whether to collapse all expanded nodes any time refresh is called.
@@ -42,7 +40,7 @@ define([
 			return previouslyExpanded;
 		},
 
-		expand: function (target, expand, noTransition, lastRowsFirst) {
+		expand: function (target, expand, noTransition) {
 			// summary:
 			//		Expands the row corresponding to the given target.
 			// target: Object
@@ -61,12 +59,6 @@ define([
 				hasTransitionend = has('transitionend'),
 				promise;
 
-			function processScroll() {
-				if (!expanded) {
-					grid._processScroll && grid._processScroll();
-				}
-			}
-
 			target = row.element;
 			target = target.className.indexOf('dgrid-expando-icon') > -1 ? target :
 				querySelector('.dgrid-expando-icon', target)[0];
@@ -76,10 +68,6 @@ define([
 			if (target && target.mayHaveChildren && (noTransition || expand !== isExpanded)) {
 				// toggle or set expand/collapsed state based on optional 2nd argument
 				var expanded = expand === undefined ? !this._expanded[row.id] : expand;
-
-				// Update _expanded map.
-				var pos = this.getScrollPosition();
-				this._resetExpanded(row.id, expanded);
 
 				// update the expando display
 				domClass.replace(target, 'ui-icon-triangle-1-' + (expanded ? 'se' : 'e'),
@@ -100,7 +88,7 @@ define([
 					var query = function (options) {
 						var childCollection = grid._renderedCollection.getChildren(row.data),
 								results;
-						if (grid.sort && grid.sort.length > 0) {
+						if (grid.sort) {
 							childCollection = childCollection.sort(grid.sort);
 						}
 						if (childCollection.track && grid.shouldTrackCollection) {
@@ -114,7 +102,6 @@ define([
 								grid._observeCollection(childCollection, container, options)
 							];
 						}
-						query.collection = childCollection;
 						if ('start' in options) {
 							var rangeArgs = {
 								start: options.start,
@@ -126,29 +113,14 @@ define([
 						}
 						return results;
 					};
+					// Include level information on query for renderQuery case
 					if ('level' in target) {
-						// Include level information on query for renderQuery case;
-						// include on container for insertRow to detect in other cases
-						container.level = query.level = target.level + 1;
+						query.level = target.level;
 					}
 
 					// Add the query to the promise chain
 					if (this.renderQuery) {
-						if (lastRowsFirst) {
-							promise = grid._renderedCollection.getChildren(row.data)
-								.fetchRange({ start: 0, end: 1 }).totalLength.then(function (total) {
-									options.start = total - grid.minRowsPerPage;
-									options.end = total - 1;
-									options.count = grid.minRowsPerPage;
-
-									grid._previousScrollPosition = pos;
-
-									return grid.renderQuery(query, options);
-								});
-						} else {
 						promise = this.renderQuery(query, options);
-					}
-
 					}
 					else {
 						// If not using OnDemandList, we don't need preload nodes,
@@ -185,10 +157,8 @@ define([
 				if (!hasTransitionend || noTransition) {
 					containerStyle.display = expanded ? 'block' : 'none';
 					containerStyle.height = '';
-					processScroll();
 				}
 				else {
-					on.once(container, hasTransitionend, processScroll);
 					if (expanded) {
 						containerStyle.display = 'block';
 						scrollHeight = container.scrollHeight;
@@ -207,6 +177,14 @@ define([
 							expanded ? (scrollHeight ? scrollHeight + 'px' : 'auto') : '0px';
 					}, 0);
 				}
+
+				// Update _expanded map.
+				if (expanded) {
+					this._expanded[row.id] = true;
+				}
+				else {
+					delete this._expanded[row.id];
+				}
 			}
 
 			// Always return a promise
@@ -218,7 +196,7 @@ define([
 
 			// Set up hash to store IDs of expanded rows (here rather than in
 			// _configureTreeColumn so nothing breaks if no column has renderExpando)
-			this._resetExpanded();
+			this._expanded = {};
 
 			for (var i = 0, l = columnArray.length; i < l; i++) {
 				if (columnArray[i].renderExpando) {
@@ -229,20 +207,15 @@ define([
 			return columnArray;
 		},
 
-		insertRow: function (object, container, beforeNode, i, options) {
-			options = options || {};
-
-			var level = options.queryLevel = 'queryLevel' in options ? options.queryLevel :
-				'level' in container ? container.level : 0;
-
+		insertRow: function (object) {
 			var rowElement = this.inherited(arguments);
 
 			// Auto-expand (shouldExpand) considerations
 			var row = this.row(rowElement),
-				expanded = this.shouldExpand(row, level, this._expanded[row.id]);
+				expanded = this.shouldExpand(row, this._currentLevel, this._expanded[row.id]);
 
 			if (expanded) {
-				this._expandWhenInDom(rowElement, options);
+				this.expand(rowElement, true, true);
 			}
 
 			if (expanded || (!this.collection.mayHaveChildren || this.collection.mayHaveChildren(object))) {
@@ -252,92 +225,9 @@ define([
 			return rowElement; // pass return value through
 		},
 
-		_expandWhenInDom: function (rowElement, options, dfd) {
-			// Expand a row after it has been inserted into the DOM.  This is necessary because
-			// the OnDemandList code that manages the preload nodes needs the nodes to be in the DOM
-			// to create a correctly ordered linked list.;
-
-			if (rowElement.offsetHeight) {
-				var expandPromise = this.expand(rowElement, true, true, options.scrollingUp);
-				if (dfd) {
-					expandPromise.then(function () {
-						dfd.resolve();
-					});
-				}
-			} else {
-				if (rowElement.parentNode && this.domNode.offsetHeight) {
-					if (this._expandPromises && !dfd) {
-						dfd = new Deferred();
-						this._expandPromises.push(dfd.promise);
-					}
-					// Continue to try to expand the row only while it is inserted into a document fragment.
-					setTimeout(this._expandWhenInDom.bind(this, rowElement, options, dfd), 0);
-				}
-			}
-		},
-
-		_queueNodeForDeletion: function (node) {
-			this.inherited(arguments);
-
-			var connected = node.connected;
-			if (connected) {
-				this._deleteQueue.push(connected);
-			}
-		},
-
-		_pruneRow: function (rowElement, removeBelow) {
-			var connected = rowElement.connected;
-			var preloadNode;
-			var preload;
-			if (connected) {
-				var rowId = this.row(rowElement).id;
-				if (this._expanded[rowId]) {
-					preloadNode = querySelector('>.dgrid-preload', connected)[removeBelow ? 1 : 0];
-					if (preloadNode) {
-						preload = this._findPreload(preloadNode);
-						preload = removeBelow ? preload.next : preload.previous;
-						if (!preload.expandedContent) {
-							preload.expandedContent = {};
-						}
-						preload.expandedContent[rowId] = connected.offsetHeight;
-					}
-				}
-			}
-
-			this.inherited(arguments, [rowElement, removeBelow, {
-				treePrune: true,
-				removeBelow: removeBelow
-			}]);
-		},
-
-		refresh: function (options) {
-			// Restoring the previous scroll position with OnDemandList is not possible in some cases with
-			// nested expanded nodes.  In those cases, restoring the position would require scrolling and
-			// loading rows incrementally to make sure the expanded rows are loaded and expanded.  dgrid is not
-			// currently written to do that.  If there are expanded rows, then do not allow the position to be
-			// restored.
-			var refreshResult;
-			this._expandPromises = [];
-			var keepScrollPosition = this.keepScrollPosition || (options && options.keepScrollPosition);
-			if (keepScrollPosition && Object.keys(this._expanded).length) {
-				refreshResult = this.inherited(arguments, lang.mixin(options || {}, { keepScrollPosition: false }));
-			} else {
-				refreshResult = this.inherited(arguments);
-			}
-			return refreshResult.then(function () {
-				var promises = this._expandPromises;
-				delete this._expandPromises;
-				return all(promises);
-			}.bind(this));
-		},
-
-		removeRow: function (rowElement, preserveDom, options) {
+		removeRow: function (rowElement, preserveDom) {
 			var connected = rowElement.connected,
-				childOptions = {},
-				childRows,
-				preloadNodes,
-				firstIndex,
-				lastIndex;
+				childOptions = {};
 			if (connected) {
 				if (connected._handles) {
 					arrayUtil.forEach(connected._handles, function (handle) {
@@ -350,34 +240,16 @@ define([
 					childOptions.rows = connected._rows;
 				}
 
-				childRows = querySelector('>.dgrid-row', connected);
-				preloadNodes = querySelector('>.dgrid-preload', connected);
-				if (childRows && childRows.length) {
-
-					if (this._releaseRange) {
-						firstIndex = childRows[0].rowIndex;
-						lastIndex = childRows[childRows.length - 1].rowIndex;
-						this._releaseRange(this._findPreload(preloadNodes[0]), false, firstIndex, lastIndex);
-					}
-
-					childRows.forEach(function (element) {
-						if (options && options.treePrune) {
-							this._pruneRow(element, options.removeBelow);
-						} else {
+				querySelector('>.dgrid-row', connected).forEach(function (element) {
 					this.removeRow(element, true, childOptions);
-						}
 				}, this);
-				}
-				this._removePreloads && this._removePreloads(preloadNodes);
 
 				if (connected._rows) {
 					connected._rows.length = 0;
 					delete connected._rows;
 				}
 
-				if (preserveDom) {
-					this._queueNodeForDeletion(connected);
-				} else {
+				if (!preserveDom) {
 					domConstruct.destroy(connected);
 				}
 			}
@@ -391,7 +263,7 @@ define([
 			}
 
 			this.inherited(arguments, [ cell, item, {
-				queryLevel: querySelector('.dgrid-expando-icon', cell.element)[0].level
+				queryLevel: querySelector('.dgrid-expando-icon', cell.element)[0].level - 1
 			}]);
 		},
 
@@ -401,7 +273,7 @@ define([
 			if (this.collapseOnRefresh) {
 				// Clear out the _expanded hash on each call to cleanup
 				// (which generally coincides with refreshes, as well as destroy)
-				this._resetExpanded();
+				this._expanded = {};
 			}
 		},
 
@@ -429,6 +301,7 @@ define([
 			//		Adds tree navigation capability to a column.
 
 			var grid = this;
+			var collection = this.collection;
 			var colSelector = '.dgrid-content .dgrid-column-' + column.id;
 			var clicked; // tracks row that was clicked (for expand dblclick event handling)
 
@@ -440,12 +313,19 @@ define([
 					// summary:
 					//		Renders a cell that can be expanded, creating more rows
 
-					var level = options && 'queryLevel' in options ? options.queryLevel : 0,
-						mayHaveChildren = !grid.collection.mayHaveChildren || grid.collection.mayHaveChildren(object),
+					if(!collection){
+						return;
+					}
+
+					var level = Number(options && options.queryLevel) + 1,
+							mayHaveChildren = !collection.mayHaveChildren || collection.mayHaveChildren(object),
 							expando, node;
 
+					level = grid._currentLevel = isNaN(level) ? 0 : level;
+
 					expando = column.renderExpando(level, mayHaveChildren,
-						grid._expanded[grid.collection.getIdentity(object)], object);
+							grid._expanded[collection.getIdentity(object)], object);
+
 					expando.level = level;
 					expando.mayHaveChildren = mayHaveChildren;
 
@@ -502,6 +382,61 @@ define([
 							}));
 				}
 			}
+
+			/*
+			 column.renderCell = function (object, value, td, options) {
+			 // summary:
+			 //		Renders a cell that can be expanded, creating more rows
+
+			 var grid = column.grid,
+			 level = Number(options && options.queryLevel) + 1,
+			 mayHaveChildren = !grid.collection.mayHaveChildren || grid.collection.mayHaveChildren(object),
+			 expando, node;
+
+			 level = grid._currentLevel = isNaN(level) ? 0 : level;
+			 expando = column.renderExpando(level, mayHaveChildren,
+			 grid._expanded[grid.collection.getIdentity(object)], object);
+			 expando.level = level;
+			 expando.mayHaveChildren = mayHaveChildren;
+
+			 node = originalRenderCell.call(column, object, value, td, options);
+			 if (node && node.nodeType) {
+			 td.appendChild(expando);
+			 td.appendChild(node);
+			 }
+			 else {
+			 td.insertBefore(expando, td.firstChild);
+			 }
+			 };
+			 *//*
+			if (!column.originalRenderCell)
+			{
+				column.originalRenderCell = column.renderCell || this._defaultRenderCell;
+				column.renderCell = function (object, value, td, options) {
+					// summary:
+					//              Renders a cell that can be expanded, creating more rows
+					var grid = column.grid,
+							level = Number(options && options.queryLevel) + 1,
+							mayHaveChildren = !grid.collection.mayHaveChildren || grid.collection.mayHaveChildren(object),
+							expando,
+							node;
+
+					level = grid._currentLevel = isNaN(level) ? 0 : level;
+					expando = column.renderExpando(level, mayHaveChildren,
+							grid._expanded[grid.collection.getIdentity(object)], object);
+					expando.level = level;
+					expando.mayHaveChildren = mayHaveChildren;
+					node = column.originalRenderCell(object, value, td, options);
+					if (node && node.nodeType) {
+						td.appendChild(expando);
+						td.appendChild(node);
+					}
+					else {
+						td.insertBefore(expando, td.firstChild);
+					}
+				};
+			}
+			*/
 		},
 
 		_defaultRenderExpando: function (level, hasChildren, expanded) {
@@ -532,7 +467,7 @@ define([
 
 		_onNotification: function (rows, event) {
 			if (event.type === 'delete') {
-				this._resetExpanded(event.id);
+				delete this._expanded[event.id];
 			}
 			this.inherited(arguments);
 		},
@@ -560,75 +495,6 @@ define([
 			}
 			// Now set the height to auto
 			this.style.height = '';
-		},
-
-		_resetPlaceHolder: function (rowId) {
-			var headPreload = this._getHeadPreload && this._getHeadPreload();
-			var preload;
-			var grid = this;
-
-			if (!headPreload) {
-				return;
-			}
-
-			function remove(rowId) {
-				var preload = headPreload;
-				while (preload) {
-					var expandedContent = preload.expandedContent;
-					if (expandedContent && expandedContent[rowId]) {
-						delete expandedContent[rowId];
-						grid._adjustPreloadHeight(preload);
-						return;
-					}
-					preload = preload.next;
-				}
-			}
-
-			if (rowId != null) {
-				remove(rowId);
-			} else {
-				preload = headPreload;
-				while (preload) {
-					if (preload.expandedContent) {
-						delete preload.expandedContent;
-						grid._adjustPreloadHeight(preload);
-					}
-					preload = preload.next;
-				}
-			}
-		},
-
-		_resetExpanded: function (rowId, expanded) {
-			// Always remove the place holder(s).
-			this._resetPlaceHolder(rowId);
-			if (rowId == null) {
-				this._expanded = {};
-			} else {
-				if (expanded) {
-					this._expanded[rowId] = true;
-				} else {
-					delete this._expanded[rowId];
-				}
-			}
-		},
-
-		_calculatePreloadHeight: function (preload) {
-			var newHeight = this.inherited(arguments);
-			var expandedContent = preload.expandedContent;
-			if (expandedContent) {
-				Object.keys(expandedContent).forEach(function (key) {
-					newHeight += expandedContent[key];
-				});
-			}
-			return newHeight;
-		},
-
-		_getRenderedCollection: function (preload) {
-			if (preload.level) {
-				return preload.query.collection;
-			} else {
-				return this.inherited(arguments);
-			}
 		}
 	});
 });
