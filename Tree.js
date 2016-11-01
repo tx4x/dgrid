@@ -10,7 +10,7 @@ define([
 	'dojo/when',
 	'./util/has-css3',
 	'./Grid',
-	'dojo/has!touch?./util/touch'
+	'xdojo/has!touch?./util/touch'
 ], function (declare, lang, arrayUtil, aspect, domConstruct, domClass, on, querySelector, when, has, Grid, touchUtil) {
 
 	return declare(null, {
