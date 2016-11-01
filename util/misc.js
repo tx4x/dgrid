@@ -45,6 +45,7 @@ define([
 	var util = {
 		// Throttle/debounce functions
 
+
 		defaultDelay: 15,
 		throttle: function (cb, context, delay) {
 			// summary:

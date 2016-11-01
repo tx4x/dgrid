@@ -94,12 +94,13 @@ define([
 	}
 
 	// window resize event handler, run in context of List instance
-	var winResizeHandler = function () {
-		console.log('reis');
-		if (this._started) {
-			this.resize();
-		}
-	};
+	//xhack no longer needed
+	//var winResizeHandler = function () {
+	//	console.log('reis');
+	//	if (this._started) {
+	//		this.resize();
+	//	}
+	//};
 
 	/**
 	 * Grid base class
@@ -130,7 +131,7 @@ define([
 
 		// addUiClasses: Boolean
 		//		Whether to add jQuery UI classes to various elements in dgrid's DOM.
-		addUiClasses: true,
+		addUiClasses: false,
 
 		// highlightDuration: Integer
 		//		The amount of time (in milliseconds) that a row should remain
@@ -195,9 +196,10 @@ define([
 			// remove srcNodeRef instance property post-create
 			delete this.srcNodeRef;
 			// to preserve "it just works" behavior, call startup if we're visible
-			if (this.domNode.offsetHeight) {
-				//this.startup();
-			}
+			//xhack, non of your business
+			//if (this.domNode.offsetHeight) {
+			//	//this.startup();
+			//}
 		},
 		buildRendering: function () {
 			var domNode = this.domNode,
@@ -274,9 +276,7 @@ define([
 			//this._listeners.push(this._resizeHandle = listen(window, 'resize',miscUtil.throttleDelayed(winResizeHandler, this)));
 		},
 
-		postCreate: function () {
-		},
-
+		//xhack: not needed postCreate: function () {},
 		startup: function () {
 			// summary:
 			//		Called automatically after postCreate if the component is already
@@ -287,7 +287,7 @@ define([
 			}
 			this.inherited(arguments);
 			this._started = true;
-			this.resize();
+			//xhack: not needed this.resize();
 			// apply sort (and refresh) now that we're ready to render
 			this.set('sort', this.sort);
 		},
@@ -397,6 +397,7 @@ define([
 			this.scrollTo({ x: 0, y: 0 });
 		},
 
+		/* xhack: not needed
 		highlightRow: function (rowElement, delay) {
 			// summary:
 			//		Highlights a row.  Used when updating rows due to store
@@ -416,7 +417,7 @@ define([
 				domClass.remove(rowElement, classes);
 			}, delay || this.highlightDuration);
 		},
-
+		*/
 		adjustRowIndices: function (firstRow) {
 			// this traverses through rows to maintain odd/even classes on the rows when indexes shift;
 			var next = firstRow;
