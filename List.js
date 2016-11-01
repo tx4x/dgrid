@@ -95,6 +95,7 @@ define([
 
 	// window resize event handler, run in context of List instance
 	var winResizeHandler = function () {
+		console.log('reis');
 		if (this._started) {
 			this.resize();
 		}
@@ -269,8 +270,8 @@ define([
 			}, this.bodyNode);
 
 			// add window resize handler, with reference for later removal if needed
-			this._listeners.push(this._resizeHandle = listen(window, 'resize',
-				miscUtil.throttleDelayed(winResizeHandler, this)));
+			//xhack: not your business
+			//this._listeners.push(this._resizeHandle = listen(window, 'resize',miscUtil.throttleDelayed(winResizeHandler, this)));
 		},
 
 		postCreate: function () {
