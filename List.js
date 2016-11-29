@@ -6,8 +6,9 @@ define([
 	'dojo/on',
 	'dojo/has',
 	'./util/misc',
-	'dojo/_base/sniff'
-], function (declare, domConstruct, domClass, listen, has, miscUtil) {
+	'dojo/_base/sniff',
+    'xide/$'
+], function (declare, domConstruct, domClass, listen, has, miscUtil,sniff,$) {
 	// Add user agent/feature CSS classes needed for structural CSS
 	var featureClasses = [];
 	if (has('mozilla')) {
@@ -392,9 +393,9 @@ define([
 			this._autoRowId = 0;
 
 			// make sure all the content has been removed so it can be recreated
-			this.contentNode.innerHTML = '';
+			$(this.contentNode).empty();
 			// Ensure scroll position always resets
-			this.scrollTo({ x: 0, y: 0 });
+			//this.scrollTo({ x: 0, y: 0 });
 		},
 
 		/* xhack: not needed
