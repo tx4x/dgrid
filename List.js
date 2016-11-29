@@ -383,7 +383,7 @@ define([
 			this._started = false;
 			this.cleanup();
 			// destroy DOM
-			domConstruct.destroy(this.domNode);
+			$(this.domNode).remove();
 		},
 		refresh: function () {
 			// summary:
@@ -394,7 +394,7 @@ define([
 
 			// make sure all the content has been removed so it can be recreated
 			$(this.contentNode).empty();
-			// Ensure scroll position always resets
+			//xhack: Ensure scroll position always resets. no, we don't! this is causing side effects in xide
 			//this.scrollTo({ x: 0, y: 0 });
 		},
 
