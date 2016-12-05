@@ -66,7 +66,7 @@ define([
 		//		When refreshing the list, controls whether the scroll position is
 		//		preserved, or reset to the top.  This can also be overridden for
 		//		specific calls to refresh.
-		keepScrollPosition: false,
+		keepScrollPosition: true,
 
 		// rowHeight: Number
 		//		Average row height, computed in renderQuery during the rendering of
@@ -250,7 +250,7 @@ define([
 
 			// Fall back to instance property if option is not defined
 			if (typeof keep === 'undefined') {
-				keep = this.keepScrollPosition;
+				//keep = this.keepScrollPosition;
 			}
 
 			// Store scroll position to be restored after new total is received

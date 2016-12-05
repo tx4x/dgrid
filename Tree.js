@@ -59,7 +59,11 @@ define([
 				hasTransitionend = has('transitionend'),
 				promise;
 
+
 			target = row.element;
+            if(!target){
+                return;
+            }
 			target = target.className.indexOf('dgrid-expando-icon') > -1 ? target :
 				querySelector('.dgrid-expando-icon', target)[0];
 
