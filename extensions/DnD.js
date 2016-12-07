@@ -29,7 +29,6 @@ define([
 
 	var GridDnDSource = declare(DnDSource, {
 		grid: null,
-
 		getObject: function (node) {
 			// summary:
 			//		getObject is a method which should be defined on any source intending
