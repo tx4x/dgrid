@@ -12,8 +12,8 @@ define([
 	'dojo/dnd/Manager',
 	'dojo/_base/NodeList',
 	'../Selection',
-	'dojo/has!touch?../util/touch',
-	'dojo/has!touch?./_DnD-touch-autoscroll'
+	'./util/touch',
+	'./_DnD-touch-autoscroll'
 ], function (declare, lang, arrayUtil, aspect, domClass, on, topic, has, when, DnDSource,
 		DnDManager, NodeList, Selection, touchUtil) {
 	// Requirements
