@@ -14,6 +14,10 @@ function copyOnly(mid) {
 }
 
 var profile = {
+    optimizeOptions: {
+        languageIn: 'ECMASCRIPT6',
+        languageOut: 'ECMASCRIPT5',
+    },
     packages: ['dgrid','dstore'],
 
     // basePath is relative to the directory containing this profile file; in this case, it is being set to the
