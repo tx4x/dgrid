@@ -484,36 +484,7 @@ define([
                     name: column.field,
                     tabIndex: isNaN(column.tabIndex) ? -1 : column.tabIndex
                 }, args));
-
-                if (has('ie') < 9) {
-                    // IE<9 doesn't fire change events for all the right things,
-                    // and it doesn't bubble.
-                    var listener;
-                    if (editor === 'radio' || editor === 'checkbox') {
-                        // listen for clicks since IE doesn't fire change events properly for checks/radios
-                        listener = on(cmp, 'click', function (evt) {
-                            self._handleEditorChange(evt, column);
-                        });
-                    }
-                    else {
-                        listener = on(cmp, 'change', function (evt) {
-                            self._handleEditorChange(evt, column);
-                        });
-                    }
-
-                    if (editOn) {
-                        // Shared editor handlers are maintained in _editorColumnListeners, since they're not per-row
-                        this._editorColumnListeners.push(listener);
-                    }
-                    else if (this._editorRowListeners) {
-                        this._editorRowListeners[column.id] = listener;
-                    }
-                    // If editRowListeners doesn't exist and this is an always-on editor,
-                    // then we're here from renderCell via refreshCell, and the row should exist
-                    else {
-                        this._editorCellListeners[this.row(object).element.id][column.id] = listener;
-                    }
-                }
+                
             }
 
             if (column.autoSelect) {
